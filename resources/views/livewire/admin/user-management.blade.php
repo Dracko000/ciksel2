@@ -98,7 +98,6 @@
                         >
                             <option value="siswa">Siswa</option>
                             <option value="guru">Guru / Tendik</option>
-                            <option value="ortu">Orang Tua</option>
                             <option value="admin">Admin</option>
                         </select>
                         @error('role')

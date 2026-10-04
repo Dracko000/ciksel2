@@ -43,10 +43,16 @@ class DeviceHeartbeat extends Command
         return $hari[now()->format('l')] ?? null;
     }
 
-    public function handle(): int
+public function handle(): int
     {
         $this->tandaiOffline();
-        $this->kirimPengingatJadwal();
+
+        // Pengingat jadwal hanya dikirim sekali pagi lewat option --jadwal.
+        // Sebelumnya method ini selalu dipanggil, padahal perintahnya dijadwalkan
+        // setiap lima menit, sehingga siswa bisa menerima pengingat berulang.
+        if ($this->option('jadwal')) {
+            $this->kirimPengingatJadwal();
+        }
 
         return self::SUCCESS;
     }
@@ -101,8 +107,10 @@ class DeviceHeartbeat extends Command
         foreach ($kegiatan as $item) {
             Notifikasi::kePeserta($item, new JadwalMendatang($item, 'peserta'));
 
+            // Pengingat peran pembina dikirim ke guru pembinanya. Sebelumnya
+            // dikirim ke admin, padahal nama sisinya sudah menyebut pembina.
             if ($item->guru?->user) {
-                Notifikasi::keAdmin(new JadwalMendatang($item, 'pembina'));
+                $item->guru->user->notify(new JadwalMendatang($item, 'pembina'));
             }
 
             $this->line("  pengingat: {$item->nama}");

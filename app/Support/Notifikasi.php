@@ -29,26 +29,22 @@ class Notifikasi
     }
 
     /**
-     * Kirim ke user milik seorang siswa (siswa itu sendiri dan orang tuanya
-     * bila sudah terhubung).
+     * Kirim ke akun siswa pemilik data tersebut.
+     *
+     * Sekolah ini tidak punya akun orang tua terpisah, jadi akun siswa
+     * sekaligus dipakai orang tuanya untuk membuka notifikasi ini.
      */
-    public static function keSiswaDanOrtu(int $siswaId, AdmsNotification $notifikasi): int
+    public static function kePemilikSiswa(int $siswaId, AdmsNotification $notifikasi): int
     {
-        $siswa = \App\Models\Siswa::with(['user', 'ortu'])->find($siswaId);
+        $user = \App\Models\Siswa::find($siswaId)?->user;
 
-        if (! $siswa) {
+        if (! $user) {
             return 0;
         }
 
-        $tujuan = array_values(array_filter([$siswa->user, $siswa->ortu]));
+        $user->notify($notifikasi);
 
-        if ($tujuan === []) {
-            return 0;
-        }
-
-        Notification::send($tujuan, $notifikasi);
-
-        return count($tujuan);
+        return 1;
     }
 
     /**

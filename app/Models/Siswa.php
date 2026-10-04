@@ -22,11 +22,6 @@ class Siswa extends Model
         return $this->belongsTo(Kelas::class);
     }
 
-    public function ortu()
-    {
-        return $this->belongsTo(User::class, 'ortu_user_id');
-    }
-
     public function pengajuanIjin()
     {
         return $this->hasMany(PengajuanIjin::class);

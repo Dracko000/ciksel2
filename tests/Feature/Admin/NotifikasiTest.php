@@ -3,9 +3,8 @@
 namespace Tests\Feature\Admin;
 
 use App\Console\Commands\DeviceHeartbeat;
-use App\Livewire\Admin\InputIjin as AdminInputIjin;
 use App\Livewire\Admin\KonfirmasiIjin;
-use App\Livewire\Ortu\InputIjin;
+use App\Livewire\Siswa\InputIjin as SiswaInputIjin;
 use App\Models\Device;
 use App\Models\Ekstrakulikuler;
 use App\Models\Guru;
@@ -38,11 +37,10 @@ class NotifikasiTest extends TestCase
         ]);
     }
 
-    private function makeSiswa(?int $ortuUserId = null): Siswa
+    private function makeSiswa(): Siswa
     {
         return Siswa::create([
             'user_id' => $this->makeUser('siswa', 'siswa-'.uniqid())->id,
-            'ortu_user_id' => $ortuUserId,
             'nis' => '221099'.random_int(1000, 9999),
             'pin' => '221099'.random_int(1000, 9999),
             'nama' => 'Siswa Notif',
@@ -61,16 +59,16 @@ class NotifikasiTest extends TestCase
         ]);
     }
 
-    public function test_pengajuan_izin_memperingatkan_admin(): void
+    public function test_siswa_mengajukan_izin_sendiri_dan_admin_diberi_tahu(): void
     {
         Notification::fake();
 
         $admin = $this->makeUser('admin', 'admin-notif');
         $siswa = $this->makeSiswa();
 
-        Livewire::actingAs($admin)
-            ->test(AdminInputIjin::class)
-            ->set('siswa_id', $siswa->id)
+        // Orang tua memakai akun anaknya, jadi pengajuan diisi dari sisi siswa.
+        Livewire::actingAs($siswa->user)
+            ->test(SiswaInputIjin::class)
             ->set('jenis', 'sakit')
             ->set('keterangan', 'Demam tinggi sejak kemarin sore.')
             ->set('tanggal_mulai', '2026-10-07')
@@ -82,22 +80,62 @@ class NotifikasiTest extends TestCase
         Notification::assertSentTo($admin, IzinDiajukan::class);
     }
 
-    public function test_pengajuan_izin_menolak_siswa_yang_tidak_ada(): void
+    public function test_pengajuan_tidak_bisa_dibuat_tanpa_keterangan(): void
     {
         Notification::fake();
 
-        $admin = $this->makeUser('admin', 'admin-invalid');
+        $admin = $this->makeUser('admin', 'admin-kosong');
+        $siswa = $this->makeSiswa();
 
-        Livewire::actingAs($admin)
-            ->test(AdminInputIjin::class)
-            ->set('siswa_id', 999999)
+        Livewire::actingAs($siswa->user)
+            ->test(SiswaInputIjin::class)
+            ->set('jenis', 'sakit')
+            ->set('keterangan', '')
+            ->set('tanggal_mulai', '2026-10-07')
+            ->set('tanggal_selesai', '2026-10-08')
+            ->call('submit')
+            ->assertHasErrors('keterangan');
+
+        $this->assertSame(0, PengajuanIjin::count());
+        Notification::assertNothingSent();
+    }
+
+    public function test_tanggal_selesai_tidak_boleh_sebelum_mulai(): void
+    {
+        Notification::fake();
+
+        $siswa = $this->makeSiswa();
+        $this->makeUser('admin', 'admin-tanggal');
+
+        Livewire::actingAs($siswa->user)
+            ->test(SiswaInputIjin::class)
+            ->set('jenis', 'izin')
+            ->set('keterangan', 'Keperluan keluarga di luar kota.')
+            ->set('tanggal_mulai', '2026-10-08')
+            ->set('tanggal_selesai', '2026-10-07')
+            ->call('submit')
+            ->assertHasErrors('tanggal_selesai');
+
+        $this->assertSame(0, PengajuanIjin::count());
+        Notification::assertNothingSent();
+    }
+
+    public function test_akun_siswa_tanpa_data_siswa_tidak_bisa_mengajukan(): void
+    {
+        Notification::fake();
+
+        $user = $this->makeUser('siswa', 'siswa-yatim');
+        $this->makeUser('admin', 'admin-yatim');
+
+        Livewire::actingAs($user)
+            ->test(SiswaInputIjin::class)
             ->set('jenis', 'sakit')
             ->set('keterangan', 'Keterangan yang cukup panjang.')
             ->set('tanggal_mulai', '2026-10-07')
             ->set('tanggal_selesai', '2026-10-08')
-            ->call('submit')
-            ->assertHasErrors('siswa_id');
+            ->call('submit');
 
+        $this->assertSame(0, PengajuanIjin::count());
         Notification::assertNothingSent();
     }
 
@@ -240,7 +278,35 @@ class NotifikasiTest extends TestCase
         $this->artisan('adms:device-heartbeat', ['--jadwal' => true])->assertSuccessful();
 
         Notification::assertSentTo($siswa->user, JadwalMendatang::class);
-        Notification::assertSentTo($admin, JadwalMendatang::class);
+        // Pengingat pembina harusnya jatuh ke guru pembinanya, bukan ke admin.
+        Notification::assertSentTo($guru->user, JadwalMendatang::class);
+        Notification::assertNotSentTo($admin, JadwalMendatang::class);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_tanpa_option_jadwal_tidak_mengirim_pengingat(): void
+    {
+        Notification::fake();
+
+        Carbon::setTestNow(Carbon::parse('2026-10-05 06:00:00'));
+
+        $this->makeUser('admin', 'admin-tanpa-jadwal');
+        $siswa = $this->makeSiswa();
+
+        $eks = Ekstrakulikuler::create([
+            'nama' => 'Robotik',
+            'hari' => 'Senin',
+            'jam_mulai' => '08:00:00',
+            'aktif' => true,
+        ]);
+        $eks->siswa()->attach($siswa->id);
+
+        // Perintah ini dijadwalkan setiap lima menit, jadi tanpa --jadwal
+        // tidak boleh ada notifikasi yang dikirim.
+        $this->artisan('adms:device-heartbeat')->assertSuccessful();
+
+        Notification::assertNotSentTo($siswa->user, JadwalMendatang::class);
 
         Carbon::setTestNow();
     }

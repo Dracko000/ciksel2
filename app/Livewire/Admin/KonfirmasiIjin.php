@@ -37,7 +37,7 @@ class KonfirmasiIjin extends Component
 
         $ijin->update(['status' => $keputusan]);
 
-        Notifikasi::keSiswaDanOrtu($ijin->siswa_id, new IzinDiputuskan($ijin, $keputusan));
+        Notifikasi::kePemilikSiswa($ijin->siswa_id, new IzinDiputuskan($ijin, $keputusan));
 
         session()->flash(
             'message',

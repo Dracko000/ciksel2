@@ -60,7 +60,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/absensi', App\Livewire\Admin\AbsensiMonitor::class)->name('admin.absensi');
         Route::get('/admin/informasi', App\Livewire\Admin\InformasiSekolahManagement::class)->name('admin.info');
         Route::get('/admin/konfirmasi', App\Livewire\Admin\KonfirmasiIjin::class)->name('admin.konfirmasi');
-        Route::get('/admin/izin', App\Livewire\Admin\InputIjin::class)->name('admin.izin');
         Route::get('/admin/devices', App\Livewire\Admin\DeviceManagement::class)->name('admin.devices');
         Route::get('/admin/laporan', App\Livewire\Admin\LaporanBulanan::class)->name('admin.laporan');
     });
@@ -75,5 +74,6 @@ Route::middleware(['auth'])->group(function () {
     // Siswa Routes
     Route::middleware(['role:siswa'])->group(function () {
         Route::get('/siswa/dashboard', App\Livewire\Siswa\Dashboard::class)->name('siswa.dashboard');
+        Route::get('/siswa/izin', App\Livewire\Siswa\InputIjin::class)->name('siswa.izin');
     });
 });

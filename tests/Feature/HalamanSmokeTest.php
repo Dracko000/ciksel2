@@ -37,7 +37,6 @@ class HalamanSmokeTest extends TestCase
             '/admin/users',
             '/admin/devices',
             '/admin/absensi',
-            '/admin/izin',
             '/admin/informasi',
             '/admin/laporan',
             '/admin/konfirmasi',
@@ -65,7 +64,32 @@ class HalamanSmokeTest extends TestCase
             'nama' => 'Siswa Uji',
         ]);
 
-        $this->actingAs($user)->get('/siswa/dashboard')->assertOk();
+        // Orang tua memakai akun anaknya, jadi form pengajuan izin ikut di sini.
+        foreach (['/siswa/dashboard', '/siswa/izin'] as $url) {
+            $this->actingAs($user)->get($url)->assertOk();
+        }
+    }
+
+    public function test_admin_tidak_bisa_membuka_halaman_siswa(): void
+    {
+        $admin = $this->buatUser('admin');
+
+        $this->actingAs($admin)->get('/siswa/izin')->assertForbidden();
+    }
+
+    public function test_nav_sidebar_siswa_menampilkan_pengajuan_izin(): void
+    {
+        $user = $this->buatUser('siswa');
+        $user->siswa()->create([
+            'user_id' => $user->id,
+            'nis' => '2210900003',
+            'pin' => '2210900003',
+            'nama' => 'Siswa Nav',
+        ]);
+
+        $this->actingAs($user)->get('/siswa/dashboard')
+            ->assertSee('Pengajuan Izin')
+            ->assertDontSee('Management Kelas');
     }
 
     public function test_nav_sidebar_hanya_menampilkan_menu_sesuai_peran(): void

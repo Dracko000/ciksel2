@@ -27,7 +27,7 @@ class UserManagement extends Component
     ];
 
     // Spesifik Siswa
-    public $nis, $kelas_id, $ortu_user_id;
+    public $nis, $kelas_id;
     // Spesifik Guru
     public $nip, $is_tendik = false;
 
@@ -79,7 +79,7 @@ class UserManagement extends Component
     {
         $this->name = ''; $this->email = ''; $this->username = ''; $this->password = '';
         $this->role = 'siswa';
-        $this->nis = ''; $this->kelas_id = null; $this->ortu_user_id = null;
+        $this->nis = ''; $this->kelas_id = null;
         $this->nip = ''; $this->is_tendik = false;
         $this->rfid_kartu = ''; $this->wajah_id_zkteco = '';
         $this->isEdit = false;
@@ -128,7 +128,6 @@ class UserManagement extends Component
                     'nis' => $this->nis,
                     'nama' => $this->name,
                     'kelas_id' => $this->kelas_id,
-                    'ortu_user_id' => $this->ortu_user_id,
                     'rfid_kartu' => $this->rfid_kartu,
                     'wajah_id_zkteco' => $this->wajah_id_zkteco,
                     'pin' => $this->nis,
@@ -181,7 +180,6 @@ class UserManagement extends Component
         if ($user->role === 'siswa' && $user->siswa) {
             $this->nis = $user->siswa->nis;
             $this->kelas_id = $user->siswa->kelas_id;
-            $this->ortu_user_id = $user->siswa->ortu_user_id;
             $this->rfid_kartu = $user->siswa->rfid_kartu;
             $this->wajah_id_zkteco = $user->siswa->wajah_id_zkteco;
         } elseif ($user->role === 'guru' && $user->guru) {

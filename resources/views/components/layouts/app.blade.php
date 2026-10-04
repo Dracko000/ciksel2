@@ -21,7 +21,6 @@
             ['route' => 'admin.kelas', 'label' => 'Management Kelas', 'icon' => 'classroom'],
             ['route' => 'admin.ekstrakulikuler', 'label' => 'Ekstrakulikuler', 'icon' => 'club'],
             ['route' => 'admin.absensi', 'label' => 'Monitor Absensi', 'icon' => 'clipboard'],
-            ['route' => 'admin.izin', 'label' => 'Catat Izin', 'icon' => 'document'],
             ['route' => 'admin.konfirmasi', 'label' => 'Konfirmasi Izin', 'icon' => 'check'],
             ['route' => 'admin.devices', 'label' => 'Mesin Absensi', 'icon' => 'device'],
             ['route' => 'admin.laporan', 'label' => 'Laporan Presensi', 'icon' => 'report'],
@@ -30,6 +29,10 @@
             ['route' => 'guru.dashboard', 'label' => 'Dashboard', 'icon' => 'dashboard'],
             ['route' => 'guru.absensi', 'label' => 'Absensi Kelas', 'icon' => 'clipboard'],
             ['route' => 'guru.nilai', 'label' => 'Input Nilai', 'icon' => 'grade'],
+        ],
+        'siswa' => [
+            ['route' => 'siswa.dashboard', 'label' => 'Dashboard', 'icon' => 'dashboard'],
+            ['route' => 'siswa.izin', 'label' => 'Pengajuan Izin', 'icon' => 'document'],
         ],
         default => [],
     };
