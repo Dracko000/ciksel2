@@ -20,7 +20,9 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'username',
         'password',
+        'role',
     ];
 
     /**
@@ -42,4 +44,43 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function siswa()
+    {
+        return $this->hasOne(Siswa::class);
+    }
+
+    public function guru()
+    {
+        return $this->hasOne(Guru::class);
+    }
+
+    /**
+     * Resolve a user from a login identifier that may be a NIS (siswa),
+     * a NIP (guru), a full email address, or the local part of an email.
+     *
+     * Returns null when nothing matches or when the identifier is
+     * ambiguous (resolves to more than one user).
+     */
+    public static function findByUsername($username): ?self
+    {
+        $username = trim((string) $username);
+
+        if ($username === '') {
+            return null;
+        }
+
+        $like = addcslashes($username, '%_\\').'@%';
+
+        $ids = array_merge(
+            Siswa::where('nis', $username)->pluck('user_id')->all(),
+            Guru::where('nip', $username)->pluck('user_id')->all(),
+            self::where('email', $username)->pluck('id')->all(),
+            self::where('email', 'like', $like)->pluck('id')->all(),
+        );
+
+        $ids = array_values(array_unique(array_filter($ids)));
+
+        return count($ids) === 1 ? self::find($ids[0]) : null;
+    }
 }

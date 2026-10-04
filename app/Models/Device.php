@@ -8,4 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class Device extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'nama',
+        'no_sn',
+        'lokasi',
+        'online',
+    ];
+
+    protected $casts = [
+        'online' => 'datetime',
+    ];
 }
