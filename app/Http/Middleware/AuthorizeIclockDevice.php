@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Models\Device;
+use App\Notifications\DeviceOnline;
+use App\Support\Notifikasi;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,11 +45,20 @@ class AuthorizeIclockDevice
             }
         }
 
+        $sebelumnyaOnline = $device->online !== null;
+
         $device->forceFill([
             'online' => now(),
             'last_seen_at' => now(),
             'ip_address' => $request->ip(),
         ])->save();
+
+        // Hanya beri tahu admin saat mesin benar-benar kembali online, bukan
+        // tiap request. Mesin absensi menghubungi server tiap beberapa detik
+        // sehingga notifikasi akan flooding bila dikirim setiap kontak.
+        if (! $sebelumnyaOnline) {
+            Notifikasi::keAdmin(new DeviceOnline($device));
+        }
 
         $request->attributes->set('iclock_device', $device);
 

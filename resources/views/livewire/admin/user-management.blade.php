@@ -1,120 +1,286 @@
-<div>
-    <h2 class="text-2xl font-bold mb-4">Manajemen Pengguna</h2>
+<div class="space-y-6">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+            <h2 class="page-title">Manajemen Pengguna</h2>
+            <p class="page-subtitle">Kelola akun siswa, guru, orang tua, dan administrator.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="badge badge-neutral">{{ $users->total() }} akun</span>
+            @if ($isEdit)
+                <span class="badge badge-brand">Mode ubah data</span>
+            @endif
+        </div>
+    </div>
 
     @if (session()->has('message'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('message') }}</span>
+        <div class="card flex items-start gap-3 border-emerald-200 bg-emerald-50 p-4" role="alert">
+            <x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+            <p class="text-sm font-medium text-emerald-800">{{ session('message') }}</p>
         </div>
     @endif
 
-    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <form wire:submit.prevent="store">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Nama</label>
-                    <input wire:model="name" type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
-                    <input wire:model="email" type="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                    <input wire:model="password" type="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Peran (Role)</label>
-                    <select wire:model.live="role" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="siswa">Siswa</option>
-                        <option value="guru">Guru / Tendik</option>
-                        <option value="ortu">Orang Tua</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
+    @if ($errors->any())
+        <div class="card border-rose-200 bg-rose-50 p-4" role="alert">
+            <div class="flex items-start gap-3">
+                <x-icon name="warning" class="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
+                <ul class="space-y-1 text-sm font-medium text-rose-700">
+                    @foreach ($errors->all() as $error)
+                        <li wire:key="error-{{ $loop->index }}">{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
 
-                @if($role === 'siswa')
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">NIS</label>
-                        <input wire:model="nis" type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="section-title">
+                {{ $isEdit ? 'Update Pengguna' : 'Tambah Pengguna' }}
+            </h3>
+
+            @if ($isEdit)
+                <span class="badge badge-brand">Sedang disunting</span>
+            @endif
+        </div>
+
+        <div class="card-body">
+            <form wire:submit.prevent="store">
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div>
+                        <label for="name" class="label">Nama</label>
+                        <input
+                            id="name"
+                            wire:model="name"
+                            type="text"
+                            required
+                            class="input @error('name') input-error @enderror"
+                        >
+                        @error('name')
+                            <p class="help-error">{{ $message }}</p>
+                        @enderror
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Kelas</label>
-                        <select wire:model="kelas_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                            <option value="">Pilih Kelas</option>
-                            @foreach($kelasList as $kelas)
-                                <option value="{{ $kelas->id }}">{{ $kelas->nama_kelas }}</option>
-                            @endforeach
+
+                    <div>
+                        <label for="email" class="label">Email</label>
+                        <input
+                            id="email"
+                            wire:model="email"
+                            type="email"
+                            required
+                            class="input @error('email') input-error @enderror"
+                        >
+                        @error('email')
+                            <p class="help-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="password" class="label">Password</label>
+                        <input
+                            id="password"
+                            wire:model="password"
+                            type="password"
+                            class="input @error('password') input-error @enderror"
+                        >
+                        <p class="mt-1.5 text-xs text-slate-500">Kosongkan bila tidak ingin mengubah.</p>
+                        @error('password')
+                            <p class="help-error">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="role" class="label">Peran (Role)</label>
+                        <select
+                            id="role"
+                            wire:model.live="role"
+                            class="input @error('role') input-error @enderror"
+                        >
+                            <option value="siswa">Siswa</option>
+                            <option value="guru">Guru / Tendik</option>
+                            <option value="ortu">Orang Tua</option>
+                            <option value="admin">Admin</option>
                         </select>
+                        @error('role')
+                            <p class="help-error">{{ $message }}</p>
+                        @enderror
                     </div>
-                @endif
 
-                @if($role === 'guru')
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">NIP / NUPTK</label>
-                        <input wire:model="nip" type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    </div>
-                    <div class="mb-4 flex items-center">
-                        <input wire:model="is_tendik" type="checkbox" class="mr-2 leading-tight">
-                        <span class="text-sm">Apakah Staff Tendik?</span>
-                    </div>
-                @endif
+                    @if ($role === 'siswa')
+                        <div>
+                            <label for="nis" class="label">NIS</label>
+                            <input
+                                id="nis"
+                                wire:model="nis"
+                                type="text"
+                                class="input @error('nis') input-error @enderror"
+                            >
+                            @error('nis')
+                                <p class="help-error">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                @if($role === 'siswa' || $role === 'guru')
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">ZKTeco Employee ID (Wajah/Jari)</label>
-                        <input wire:model="wajah_id_zkteco" type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <p class="text-xs text-gray-500 mt-1">ID ini akan disinkronkan dengan log dari mesin absensi ZKTeco.</p>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">RFID Kartu</label>
-                        <input wire:model="rfid_kartu" type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    </div>
-                @endif
-            </div>
+                        <div>
+                            <label for="kelas_id" class="label">Kelas</label>
+                            <select id="kelas_id" wire:model="kelas_id" class="input">
+                                <option value="">Pilih Kelas</option>
+                                @foreach ($kelasList as $kelas)
+                                    <option wire:key="kelas-{{ $kelas->id }}" value="{{ $kelas->id }}">{{ $kelas->nama_kelas }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
 
-            <div class="flex items-center justify-end mt-4">
-                <button type="button" wire:click="resetFields" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">Batal</button>
-                <button type="submit" class="bg-blue-600 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">
-                    {{ $isEdit ? 'Update' : 'Simpan' }}
-                </button>
-            </div>
-        </form>
+                    @if ($role === 'guru')
+                        <div>
+                            <label for="nip" class="label">NIP / NUPTK</label>
+                            <input
+                                id="nip"
+                                wire:model="nip"
+                                type="text"
+                                class="input @error('nip') input-error @enderror"
+                            >
+                            @error('nip')
+                                <p class="help-error">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <label class="flex items-center gap-2 self-end pb-2 text-sm text-slate-700">
+                            <input
+                                wire:model="is_tendik"
+                                type="checkbox"
+                                class="rounded border-slate-300 text-brand-600 focus:ring-brand-600/40"
+                            >
+                            Apakah Staff Tendik?
+                        </label>
+                    @endif
+
+                    @if ($role === 'siswa' || $role === 'guru')
+                        <div>
+                            <label for="wajah_id_zkteco" class="label">ZKTeco Employee ID (Wajah/Jari)</label>
+                            <input
+                                id="wajah_id_zkteco"
+                                wire:model="wajah_id_zkteco"
+                                type="text"
+                                class="input"
+                            >
+                            <p class="mt-1.5 text-xs text-slate-500">
+                                ID ini akan disinkronkan dengan log dari mesin absensi ZKTeco.
+                            </p>
+                        </div>
+
+                        <div>
+                            <label for="rfid_kartu" class="label">RFID Kartu</label>
+                            <input
+                                id="rfid_kartu"
+                                wire:model="rfid_kartu"
+                                type="text"
+                                class="input"
+                            >
+                        </div>
+                    @endif
+                </div>
+
+                <div class="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-4">
+                    <button type="button" wire:click="resetFields" class="btn btn-secondary">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <x-icon name="check" class="h-4 w-4" />
+                        {{ $isEdit ? 'Update' : 'Simpan' }}
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <!-- Table -->
-    <div class="bg-white shadow-md rounded my-6">
-        <table class="text-left w-full border-collapse">
-            <thead>
-                <tr>
-                    <th class="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b border-grey-light">Nama</th>
-                    <th class="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b border-grey-light">Email</th>
-                    <th class="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b border-grey-light">Role</th>
-                    <th class="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b border-grey-light">ZKTeco ID</th>
-                    <th class="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b border-grey-light">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($users as $user)
-                <tr class="hover:bg-grey-lighter">
-                    <td class="py-4 px-6 border-b border-grey-light">{{ $user->name }}</td>
-                    <td class="py-4 px-6 border-b border-grey-light">{{ $user->email }}</td>
-                    <td class="py-4 px-6 border-b border-grey-light"><span class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded">{{ ucfirst($user->role) }}</span></td>
-                    <td class="py-4 px-6 border-b border-grey-light">
-                        @if($user->role === 'siswa' && $user->siswa)
-                            {{ $user->siswa->wajah_id_zkteco ?? '-' }}
-                        @elseif($user->role === 'guru' && $user->guru)
-                            {{ $user->guru->wajah_id_zkteco ?? '-' }}
-                        @else
-                            -
-                        @endif
-                    </td>
-                    <td class="py-4 px-6 border-b border-grey-light">
-                        <button wire:click="edit({{ $user->id }})" class="text-white font-bold py-1 px-3 rounded text-xs bg-green-500 hover:bg-green-600">Edit</button>
-                        <button wire:click="delete({{ $user->id }})" class="text-white font-bold py-1 px-3 rounded text-xs bg-red-500 hover:bg-red-600">Hapus</button>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+    <div class="table-shell">
+        <div class="card-header">
+            <h3 class="section-title">Daftar Pengguna</h3>
+
+            <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+                <div class="relative w-full sm:w-80">
+                    <x-icon name="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <input
+                        type="search"
+                        wire:model.live.debounce.300ms="search"
+                        placeholder="Cari nama, NIS/NIP, atau email..."
+                        class="input pl-9"
+                    >
+                </div>
+
+                <select wire:model.live="roleFilter" class="input w-full sm:w-44">
+                    <option value="">Semua role</option>
+                    <option value="admin">Admin</option>
+                    <option value="guru">Guru</option>
+                    <option value="siswa">Siswa</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-scroll">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>ZKTeco ID</th>
+                        <th class="text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($users as $user)
+                        <tr wire:key="user-{{ $user->id }}">
+                            <td class="font-medium text-slate-800">{{ $user->name ?? '-' }}</td>
+                            <td>{{ $user->email ?? '-' }}</td>
+                            <td>
+                                <span class="badge {{ $user->role === 'admin' ? 'badge-brand' : 'badge-neutral' }}">
+                                    {{ ucfirst($user->role ?? '') }}
+                                </span>
+                            </td>
+                            <td class="font-mono text-xs">
+                                @if ($user->role === 'siswa' && $user->siswa)
+                                    {{ $user->siswa->wajah_id_zkteco ?? '-' }}
+                                @elseif ($user->role === 'guru' && $user->guru)
+                                    {{ $user->guru->wajah_id_zkteco ?? '-' }}
+                                @else
+                                    <span class="text-slate-400">-</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="flex justify-end gap-2">
+                                    <button
+                                        type="button"
+                                        wire:click="edit({{ $user->id }})"
+                                        class="btn btn-sm btn-secondary"
+                                    >
+                                        <x-icon name="edit" class="h-3.5 w-3.5" />
+                                        Edit
+                                    </button>
+                                    <button
+                                        type="button"
+                                        wire:click="delete({{ $user->id }})"
+                                        wire:confirm="Hapus user {{ $user->name }}?"
+                                        class="btn btn-sm btn-danger"
+                                    >
+                                        <x-icon name="trash" class="h-3.5 w-3.5" />
+                                        Hapus
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="py-10 text-center text-sm text-slate-500">
+                                Tidak ada user yang cocok.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="border-t border-slate-200 px-5 py-4">{{ $users->links() }}</div>
     </div>
 </div>

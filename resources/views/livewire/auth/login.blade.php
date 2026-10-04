@@ -1,76 +1,93 @@
-<div class="min-h-screen bg-slate-900 flex items-center justify-center p-6 relative overflow-hidden">
-    <!-- Decorative Blobs -->
-    <div class="absolute -top-24 -left-24 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl animate-pulse"></div>
-    <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+<div class="flex min-h-screen items-center justify-center p-6">
+    <div class="grid w-full max-w-5xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl lg:grid-cols-2">
+        <div class="relative hidden bg-slate-900 lg:block">
+            <img src="/artifacts/school_background_modern.png" alt=""
+                 class="absolute inset-0 h-full w-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-900/40 to-slate-900/20"></div>
 
-    <div class="max-w-5xl w-full bg-white rounded-[2.5rem] shadow-2xl flex overflow-hidden min-h-[600px] z-10 border border-white/20">
-        <!-- Image Side -->
-        <div class="hidden lg:block lg:w-1/2 relative">
-            <img src="/artifacts/school_background_modern.png" class="absolute inset-0 w-full h-full object-cover" alt="School Background">
-            <div class="absolute inset-0 bg-gradient-to-t from-indigo-900/80 via-transparent to-indigo-900/40"></div>
-            <div class="absolute bottom-12 left-12 right-12 text-white">
-                <h2 class="text-4xl font-bold mb-4 tracking-tight leading-tight">Membangun Masa Depan Cemerlang</h2>
-                <p class="text-indigo-100 font-medium opacity-90">Sistem Informasi Akademik & Absensi Digital Terintegrasi SDN Cikampek Selatan 2.</p>
+            <div class="relative flex h-full flex-col justify-end p-10">
+                <span class="mb-auto inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-600 text-white">
+                    <x-icon name="school" class="h-5 w-5" />
+                </span>
+
+                <h2 class="text-3xl font-semibold leading-tight tracking-tight text-white">
+                    Membangun Masa Depan Cemerlang
+                </h2>
+                <p class="mt-3 text-sm leading-relaxed text-slate-300">
+                    Sistem Informasi Akademik &amp; Absensi Digital Terintegrasi
+                    SDN Cikampek Selatan 2.
+                </p>
             </div>
         </div>
 
-        <!-- Form Side -->
-        <div class="w-full lg:w-1/2 p-12 lg:p-20 flex flex-col justify-center">
-            <div class="mb-10 flex items-center space-x-3">
-                <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-600/40">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                </div>
+        <div class="flex flex-col justify-center p-8 sm:p-12">
+            <div class="mb-8 flex items-center gap-3">
+                <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-600 text-white lg:hidden">
+                    <x-icon name="book" class="h-5 w-5" />
+                </span>
                 <div>
-                    <h1 class="text-2xl font-black text-slate-900 tracking-tight">SIAKAD</h1>
-                    <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-400">SDN CS 2</p>
+                    <p class="text-lg font-semibold tracking-tight text-slate-900">SIAKAD</p>
+                    <p class="text-xs text-slate-500">SDN Cikampek Selatan 2</p>
                 </div>
             </div>
 
-            <h3 class="text-3xl font-bold text-slate-800 mb-2 tracking-tight">Selamat Datang</h3>
-            <p class="text-slate-500 mb-8 font-medium">Silakan masuk ke akun Anda untuk melanjutkan.</p>
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Masuk ke akun Anda</h1>
+            <p class="mt-1.5 text-sm text-slate-500">Gunakan username dan password yang diberikan sekolah.</p>
 
-            <form wire:submit.prevent="login" class="space-y-6">
+            <form wire:submit.prevent="login" class="mt-7 space-y-5">
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Username</label>
-                    <div class="relative group">
-                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-indigo-600 transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206"></path></svg>
+                    <label for="username" class="label">Username</label>
+                    <div class="relative">
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <x-icon name="user" class="h-4 w-4" />
                         </span>
-                        <input wire:model="username" type="text" autocomplete="username" placeholder="NIS / NIP" class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition font-medium text-slate-700">
+                        <input id="username" wire:model="username" type="text" autocomplete="username"
+                               placeholder="NIS atau NIP"
+                               class="input pl-9"
+                               @class(['input-error' => $errors->has('username')])>
                     </div>
-                    @error('username') <span class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</span> @enderror
+                    @error('username')
+                        <p class="help-error" role="alert">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Password</label>
-                    <div class="relative group">
-                        <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-indigo-600 transition">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <label for="password" class="label">Password</label>
+                    <div class="relative">
+                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <x-icon name="lock" class="h-4 w-4" />
                         </span>
-                        <input wire:model="password" type="password" placeholder="••••••••" class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition font-medium text-slate-700">
+                        <input id="password" wire:model="password" type="password" autocomplete="current-password"
+                               placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                               class="input pl-9"
+                               @class(['input-error' => $errors->has('password')])>
                     </div>
-                    @error('password') <span class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</span> @enderror
+                    @error('password')
+                        <p class="help-error" role="alert">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <div class="flex items-center justify-between px-1">
-                    <label class="flex items-center text-sm font-semibold text-slate-500 cursor-pointer">
-                        <input type="checkbox" class="w-4 h-4 text-indigo-600 bg-slate-100 border-slate-300 rounded focus:ring-indigo-600">
-                        <span class="ml-2">Ingat saya</span>
-                    </label>
-                    <a href="#" class="text-sm font-bold text-indigo-600 hover:text-indigo-800 transition">Lupa password?</a>
-                </div>
+                <label for="remember" class="flex cursor-pointer items-center gap-2 text-sm text-slate-600">
+                    <input id="remember" wire:model="remember" type="checkbox"
+                           class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-600">
+                    Ingat saya
+                </label>
 
-                <button type="submit" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl shadow-indigo-600/30 hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0 transition transform duration-200">
-                    Masuk ke Sistem
+                <button type="submit" class="btn btn-primary w-full py-2.5" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="login">Masuk</span>
+                    <span wire:loading wire:target="login" class="inline-flex items-center gap-2">
+                        <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                        </svg>
+                        Memproses&hellip;
+                    </span>
                 </button>
             </form>
 
-            @if (session()->has('error'))
-                <div class="mt-6 p-4 bg-red-50 rounded-2xl border border-red-100 text-red-600 text-sm font-bold flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    {{ session('error') }}
-                </div>
-            @endif
+            <p class="mt-8 text-xs leading-relaxed text-slate-400">
+                Lupa password atau belum punya akun? Hubungi administrator sekolah.
+            </p>
         </div>
     </div>
 </div>

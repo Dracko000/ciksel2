@@ -1,112 +1,191 @@
-<div>
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+<div class="space-y-6">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-            <h2 class="text-3xl font-black text-slate-900 tracking-tight">Monitoring Device ZKTeco</h2>
-            <p class="text-slate-500 font-medium">Pantau status koneksi dan kelola identitas mesin absensi Anda.</p>
+            <h2 class="page-title">Monitoring Device ZKTeco</h2>
+            <p class="page-subtitle">Pantau status koneksi dan kelola identitas mesin absensi Anda.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="badge badge-neutral">{{ $devices->count() }} mesin terdaftar</span>
+            @if ($isEdit)
+                <span class="badge badge-brand">Mode ubah data</span>
+            @endif
         </div>
     </div>
 
     @if (session()->has('message'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-2xl relative mb-6 font-bold" role="alert">
-            <span class="block sm:inline">{{ session('message') }}</span>
+        <div class="card flex items-start gap-3 border-emerald-200 bg-emerald-50 p-4" role="alert">
+            <x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+            <p class="text-sm font-medium text-emerald-800">{{ session('message') }}</p>
         </div>
     @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Form Edit -->
+    @if ($errors->any())
+        <div class="card border-rose-200 bg-rose-50 p-4" role="alert">
+            <div class="flex items-start gap-3">
+                <x-icon name="warning" class="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
+                <ul class="space-y-1 text-sm font-medium text-rose-700">
+                    @foreach ($errors->all() as $error)
+                        <li wire:key="error-{{ $loop->index }}">{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div class="lg:col-span-1">
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-                <h3 class="text-xl font-black text-slate-800 mb-6 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
-                    {{ $isEdit ? 'Edit Device' : 'Tambah Device Manual' }}
-                </h3>
-                
-                <form wire:submit.prevent="{{ $isEdit ? 'update' : 'store' }}" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Serial Number (SN)</label>
-                        <input wire:model="no_sn" type="text" placeholder="Masukkan SN Mesin" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition font-medium {{ $isEdit ? 'opacity-50 pointer-events-none' : '' }}">
-                        @error('no_sn') <span class="text-red-500 text-[10px] font-bold uppercase mt-1 ml-1">{{ $message }}</span> @enderror
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Nama Mesin</label>
-                        <input wire:model="nama" type="text" placeholder="Contoh: Pintu Depan" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition font-medium">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Lokasi</label>
-                        <input wire:model="lokasi" type="text" placeholder="Contoh: Gedung A Lt.1" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition font-medium">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Secret Token</label>
-                        <div class="flex gap-2">
-                            <input wire:model="secret_token" type="text" placeholder="Kosongkan bila device tanpa token" class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition font-medium">
-                            <button type="button" wire:click="generateToken" class="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition whitespace-nowrap">Generate</button>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="section-title">
+                        {{ $isEdit ? 'Edit Device' : 'Tambah Device Manual' }}
+                    </h3>
+                    <x-icon name="device" class="h-4 w-4 text-slate-400" />
+                </div>
+
+                <div class="card-body">
+                    <form wire:submit.prevent="{{ $isEdit ? 'update' : 'store' }}" class="space-y-4">
+                        <div>
+                            <label for="no_sn" class="label">Serial Number (SN)</label>
+                            <input
+                                id="no_sn"
+                                wire:model="no_sn"
+                                type="text"
+                                placeholder="Masukkan SN Mesin"
+                                class="input font-mono @error('no_sn') input-error @enderror {{ $isEdit ? 'opacity-50 pointer-events-none' : '' }}"
+                            >
+                            @error('no_sn')
+                                <p class="help-error">{{ $message }}</p>
+                            @enderror
                         </div>
-                        <p class="text-xs text-slate-400 mt-1">Device wajib mengirim token ini lewat header <span class="font-mono">X-Device-Token</span>. Biarkan kosong hanya untuk device uji.</p>
-                    </div>
-                    <div class="flex gap-2 pt-2">
-                        <button type="submit" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition">
-                            {{ $isEdit ? 'Update' : 'Simpan Device' }}
-                        </button>
-                        @if($isEdit)
-                            <button type="button" wire:click="resetFields" class="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition">Batal</button>
-                        @endif
-                    </div>
-                </form>
+
+                        <div>
+                            <label for="nama" class="label">Nama Mesin</label>
+                            <input
+                                id="nama"
+                                wire:model="nama"
+                                type="text"
+                                placeholder="Contoh: Pintu Depan"
+                                class="input"
+                            >
+                        </div>
+
+                        <div>
+                            <label for="lokasi" class="label">Lokasi</label>
+                            <input
+                                id="lokasi"
+                                wire:model="lokasi"
+                                type="text"
+                                placeholder="Contoh: Gedung A Lt.1"
+                                class="input"
+                            >
+                        </div>
+
+                        <div>
+                            <label for="secret_token" class="label">Secret Token</label>
+                            <div class="flex gap-2">
+                                <input
+                                    id="secret_token"
+                                    wire:model="secret_token"
+                                    type="text"
+                                    placeholder="Kosongkan bila device tanpa token"
+                                    class="input flex-1 font-mono"
+                                >
+                                <button type="button" wire:click="generateToken" class="btn btn-secondary shrink-0">
+                                    Generate
+                                </button>
+                            </div>
+                            <p class="mt-1.5 text-xs text-slate-500">
+                                Device wajib mengirim token ini lewat header <span class="font-mono">X-Device-Token</span>.
+                                Biarkan kosong hanya untuk device uji.
+                            </p>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+                            <button type="submit" class="btn btn-primary flex-1">
+                                <x-icon name="check" class="h-4 w-4" />
+                                {{ $isEdit ? 'Update' : 'Simpan Device' }}
+                            </button>
+                            @if ($isEdit)
+                                <button type="button" wire:click="resetFields" class="btn btn-secondary">
+                                    Batal
+                                </button>
+                            @endif
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
-        <!-- List Device -->
         <div class="lg:col-span-2">
-            <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+            <div class="table-shell">
+                <div class="card-header">
+                    <h3 class="section-title">Daftar Mesin</h3>
+                    <span class="text-xs text-slate-400">Terakhir kontak &lt; 5 menit ditandai online</span>
+                </div>
+
+                <div class="table-scroll">
+                    <table class="table">
                         <thead>
-                            <tr class="bg-slate-50/50">
-                                <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Serial Number (SN)</th>
-                                <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Identitas</th>
-                                <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status Terakhir</th>
-                                <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Aksi</th>
+                            <tr>
+                                <th>Serial Number (SN)</th>
+                                <th>Identitas</th>
+                                <th>Status Terakhir</th>
+                                <th class="text-right">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-50">
-                            @forelse($devices as $dev)
-                            <tr class="hover:bg-slate-50/80 transition-colors">
-                                <td class="px-8 py-6">
-                                    <span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-black font-mono">{{ $dev->no_sn }}</span>
-                                </td>
-                                <td class="px-8 py-6">
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-slate-800">{{ $dev->nama ?? 'Unit Belum Dinamai' }}</span>
-                                        <span class="text-xs text-slate-500 font-medium">{{ $dev->lokasi ?? 'Lokasi Belum Diatur' }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-8 py-6">
-                                    @php
-                                        $isOnline = $dev->online ? \Carbon\Carbon::parse($dev->online)->diffInMinutes(now()) < 5 : false;
-                                    @endphp
-                                    <div class="flex items-center">
-                                        <span class="w-2 h-2 rounded-full mr-2 {{ $isOnline ? 'bg-green-500 animate-pulse' : 'bg-red-500' }}"></span>
-                                        <span class="text-xs font-bold {{ $isOnline ? 'text-green-600' : 'text-red-600' }}">
+                        <tbody>
+                            @forelse ($devices as $dev)
+                                @php
+                                    $isOnline = $dev->online ? \Carbon\Carbon::parse($dev->online)->diffInMinutes(now()) < 5 : false;
+                                @endphp
+                                <tr wire:key="device-{{ $dev->id }}">
+                                    <td>
+                                        <span class="rounded-lg bg-slate-100 px-2.5 py-1 font-mono text-xs font-semibold text-slate-700">
+                                            {{ $dev->no_sn }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="block font-medium text-slate-800">{{ $dev->nama ?? 'Unit Belum Dinamai' }}</span>
+                                        <span class="mt-0.5 block text-xs text-slate-500">{{ $dev->lokasi ?? 'Lokasi Belum Diatur' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ $isOnline ? 'badge-success' : 'badge-danger' }}">
+                                            <span class="h-1.5 w-1.5 rounded-full {{ $isOnline ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
                                             {{ $isOnline ? 'Online' : 'Offline' }}
                                         </span>
-                                    </div>
-                                    <p class="text-[10px] text-slate-400 mt-1 font-medium italic">Sinyal: {{ $dev->online ? \Carbon\Carbon::parse($dev->online)->diffForHumans() : 'Belum pernah konek' }}</p>
-                                </td>
-                                <td class="px-8 py-6 text-right">
-                                    <div class="flex justify-end space-x-2">
-                                        <button wire:click="edit({{ $dev->id }})" class="p-2 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                        </button>
-                                        <button wire:click="delete({{ $dev->id }})" onclick="confirm('Hapus device ini dari monitoring?') || event.stopImmediatePropagation()" class="p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                                        <span class="mt-1 block text-xs text-slate-400">
+                                            Sinyal: {{ $dev->online ? \Carbon\Carbon::parse($dev->online)->diffForHumans() : 'Belum pernah konek' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="flex justify-end gap-2">
+                                            <button
+                                                type="button"
+                                                wire:click="edit({{ $dev->id }})"
+                                                class="btn btn-sm btn-secondary"
+                                            >
+                                                <x-icon name="edit" class="h-3.5 w-3.5" />
+                                                Ubah
+                                            </button>
+                                            <button
+                                                type="button"
+                                                wire:click="delete({{ $dev->id }})"
+                                                onclick="confirm('Hapus device ini dari monitoring?') || event.stopImmediatePropagation()"
+                                                class="btn btn-sm btn-danger"
+                                            >
+                                                <x-icon name="trash" class="h-3.5 w-3.5" />
+                                                Hapus
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
                             @empty
-                            <tr>
-                                <td colspan="4" class="px-8 py-12 text-center text-slate-400 font-medium">Belum ada mesin ZKTeco yang terhubung.</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="4" class="py-10 text-center text-sm text-slate-500">
+                                        Belum ada mesin ZKTeco yang terhubung.
+                                    </td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>

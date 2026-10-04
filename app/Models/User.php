@@ -73,6 +73,9 @@ class User extends Authenticatable
         $like = addcslashes($username, '%_\\').'@%';
 
         $ids = array_merge(
+            // Kolom username adalah kunci login utama: berisi NIS/NIP untuk
+            // siswa/guru dan "administrator" untuk admin.
+            self::where('username', $username)->pluck('id')->all(),
             Siswa::where('nis', $username)->pluck('user_id')->all(),
             Guru::where('nip', $username)->pluck('user_id')->all(),
             self::where('email', $username)->pluck('id')->all(),

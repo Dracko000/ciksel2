@@ -1,1 +1,206 @@
 @import "tailwindcss";
+
+/*
+ * Palet merek ADMS.
+ *
+ * Seluruh warna aksen aplikasi memakai skala "brand" ini. Mengganti warna
+ * aplikasi cukup dilakukan di satu tempat, bukan dengan menyunting setiap
+ * view. Skala dibuat manual (bukan alias ke red bawaan) supaya nuansanya
+ * sedikit lebih hangat dan dalam, sehingga tombol primer tetap terbaca
+ * profesional dan tidak mencolok seperti merah alarm.
+ */
+@theme {
+    --color-brand-50: #fef4f4;
+    --color-brand-100: #fee6e6;
+    --color-brand-200: #fdd0d0;
+    --color-brand-300: #f9aeae;
+    --color-brand-400: #f27e7e;
+    --color-brand-500: #e04a4a;
+    --color-brand-600: #cc2f2f;
+    --color-brand-700: #ad2323;
+    --color-brand-800: #901e20;
+    --color-brand-900: #7a1d1f;
+    --color-brand-950: #450c0e;
+
+    /*_netral aplikasi_ */
+    --color-canvas: #f6f7f9;
+    --color-ink: #0f172a;
+}
+
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        @apply font-sans text-slate-900 antialiased;
+        font-feature-settings: "cv11", "ss01";
+    }
+
+    /* Fokus keyboard harus selalu terlihat, termasuk untuk elemen custom. */
+    :focus-visible {
+        @apply outline-none ring-2 ring-brand-600/60 ring-offset-2 ring-offset-white;
+    }
+
+    /* Elemen yang bergantung Alpine disembunyikan sampai Alpine siap,
+       supaya tidak berkedip saat halaman dimuat. */
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@layer components {
+    /* ---------- Permukaan ---------- */
+
+    .card {
+        @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+    }
+
+    .card-header {
+        @apply flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4;
+    }
+
+    .card-body {
+        @apply px-5 py-4;
+    }
+
+    /* ---------- Tipografi ---------- */
+
+    .page-title {
+        @apply text-xl font-semibold tracking-tight text-slate-800;
+    }
+
+    .page-subtitle {
+        @apply mt-1 text-sm text-slate-500;
+    }
+
+    .section-title {
+        @apply text-sm font-semibold uppercase tracking-wide text-slate-500;
+    }
+
+    /* ---------- Tombol ----------
+       Pakai sebagai "class btn btn-primary". Modifier hanya mengatur warna,
+       sehingga tidak perlu @apply dari class kustom lain. */
+
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg border border-transparent
+               px-3.5 py-2 text-sm font-medium whitespace-nowrap transition-colors duration-150
+               disabled:cursor-not-allowed disabled:opacity-60;
+    }
+
+    .btn-primary {
+        @apply bg-brand-600 text-white shadow-sm hover:bg-brand-700;
+    }
+
+    .btn-secondary {
+        @apply border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+    }
+
+    .btn-danger {
+        @apply bg-brand-800 text-white shadow-sm hover:bg-brand-900;
+    }
+
+    .btn-ghost {
+        @apply text-slate-600 hover:bg-slate-100;
+    }
+
+    .btn-sm {
+        @apply px-2.5 py-1.5 text-xs;
+    }
+
+    /* ---------- Form ---------- */
+
+    .label {
+        @apply mb-1.5 block text-sm font-medium text-slate-700;
+    }
+
+    .input {
+        @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800
+               placeholder:text-slate-400 focus:border-brand-600;
+    }
+
+    .input-error {
+        @apply border-rose-400 focus:border-rose-500;
+    }
+
+    .help-error {
+        @apply mt-1.5 text-xs font-medium text-rose-600;
+    }
+
+    /* ---------- Label status ----------
+       Pakai sebagai "class badge badge-success". */
+
+    .badge {
+        @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap;
+    }
+
+    .badge-neutral {
+        @apply bg-slate-100 text-slate-600;
+    }
+
+    .badge-success {
+        @apply bg-emerald-50 text-emerald-700;
+    }
+
+    .badge-danger {
+        @apply bg-rose-50 text-rose-700;
+    }
+
+    .badge-warning {
+        @apply bg-amber-50 text-amber-700;
+    }
+
+    .badge-brand {
+        @apply bg-brand-50 text-brand-700;
+    }
+
+    /* ---------- Tabel ---------- */
+
+    .table-shell {
+        @apply overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm;
+    }
+
+    .table-scroll {
+        @apply overflow-x-auto;
+    }
+
+    .table {
+        @apply w-full border-collapse text-left;
+    }
+
+    .table thead {
+        @apply bg-slate-50;
+    }
+
+    .table th {
+        @apply whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500;
+    }
+
+    .table td {
+        @apply px-4 py-3 text-sm text-slate-600;
+    }
+
+    .table tbody tr {
+        @apply border-t border-slate-100 bg-white transition-colors hover:bg-slate-50;
+    }
+
+    /* ---------- Utilitas ---------- */
+
+    .sidebar-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: #334155 transparent;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+        background-color: #334155;
+        border-radius: 9999px;
+    }
+}

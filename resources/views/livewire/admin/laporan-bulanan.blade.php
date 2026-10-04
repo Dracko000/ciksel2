@@ -1,58 +1,81 @@
-<div>
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+<div class="space-y-6">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-            <h2 class="text-3xl font-black text-slate-900 tracking-tight">Laporan Presensi Bulanan</h2>
-            <p class="text-slate-500 font-medium">Rekapitulasi kehadiran siswa per bulan untuk SDN Cikampek Selatan 2.</p>
+            <h2 class="page-title">Laporan Presensi Bulanan</h2>
+            <p class="page-subtitle">
+                Rekapitulasi kehadiran siswa per bulan untuk SDN Cikampek Selatan 2.
+            </p>
         </div>
-        <div class="flex items-center space-x-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-200">
-            <select wire:model="month" class="bg-transparent border-none focus:ring-0 text-sm font-bold text-slate-700">
-                @foreach(range(1, 12) as $m)
-                    <option value="{{ sprintf('%02d', $m) }}">{{ date('F', mktime(0, 0, 0, $m, 1)) }}</option>
-                @endforeach
-            </select>
-            <select wire:model="year" class="bg-transparent border-none focus:ring-0 text-sm font-bold text-slate-700">
-                @foreach(range(date('Y')-2, date('Y')) as $y)
-                    <option value="{{ $y }}">{{ $y }}</option>
-                @endforeach
-            </select>
-            <button wire:click="generateReport" class="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-xs hover:bg-indigo-700 transition">Filter</button>
+
+        <div class="card flex flex-wrap items-end gap-3 p-4">
+            <div class="w-36">
+                <label for="bulan" class="label">Bulan</label>
+                <select id="bulan" wire:model="month" class="input">
+                    @foreach (range(1, 12) as $m)
+                        <option value="{{ sprintf('%02d', $m) }}">{{ date('F', mktime(0, 0, 0, $m, 1)) }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="w-28">
+                <label for="tahun" class="label">Tahun</label>
+                <select id="tahun" wire:model="year" class="input">
+                    @foreach (range(date('Y') - 2, date('Y')) as $y)
+                        <option value="{{ $y }}">{{ $y }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <button type="button" wire:click="generateReport" class="btn btn-primary">
+                <x-icon name="search" class="h-4 w-4" />
+                Terapkan
+            </button>
         </div>
     </div>
 
-    <x-card>
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
+    <div class="table-shell">
+        <div class="table-scroll">
+            <table class="table">
                 <thead>
-                    <tr class="bg-slate-50/50">
-                        <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">NIS</th>
-                        <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nama Siswa</th>
-                        <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kelas</th>
-                        <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Hadir</th>
-                        <th class="px-8 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Persentase</th>
+                    <tr>
+                        <th>NIS</th>
+                        <th>Nama Siswa</th>
+                        <th>Kelas</th>
+                        <th>Total Hadir</th>
+                        <th>Persentase</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-50">
-                    @foreach($reportData as $data)
-                    <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="px-8 py-4 text-sm font-medium text-slate-500">{{ $data['nis'] }}</td>
-                        <td class="px-8 py-4 text-sm font-bold text-slate-800">{{ $data['nama'] }}</td>
-                        <td class="px-8 py-4 text-sm font-medium text-slate-600">{{ $data['kelas'] }}</td>
-                        <td class="px-8 py-4">
-                            <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-black">
-                                {{ $data['hadir'] }} Hari
-                            </span>
-                        </td>
-                        <td class="px-8 py-4">
-                            @php $pct = round(($data['hadir'] / 25) * 100); @endphp
-                            <div class="w-full bg-slate-100 rounded-full h-2 max-w-[100px]">
-                                <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ min($pct, 100) }}%"></div>
-                            </div>
-                            <span class="text-[10px] font-bold text-slate-400">{{ $pct }}%</span>
-                        </td>
-                    </tr>
-                    @endforeach
+                <tbody>
+                    @forelse ($reportData as $data)
+                        @php
+                            $pct = round(($data['hadir'] / 25) * 100);
+                        @endphp
+                        <tr wire:key="laporan-{{ $data['nis'] }}">
+                            <td class="font-mono text-xs">{{ $data['nis'] }}</td>
+                            <td class="font-medium text-slate-800">{{ $data['nama'] }}</td>
+                            <td>{{ $data['kelas'] }}</td>
+                            <td>
+                                <span class="badge badge-brand">{{ $data['hadir'] }} Hari</span>
+                            </td>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <div class="h-2 w-24 overflow-hidden rounded-full bg-slate-100">
+                                        <div class="h-2 rounded-full bg-brand-600"
+                                             style="width: {{ min($pct, 100) }}%"></div>
+                                    </div>
+                                    <span class="text-xs font-medium tabular-nums text-slate-500">{{ $pct }}%</span>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="py-10 text-center text-sm text-slate-500">
+                                Belum ada data presensi pada periode ini.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
-    </x-card>
+    </div>
 </div>

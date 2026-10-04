@@ -2,18 +2,30 @@
 
 namespace App\Livewire\Admin;
 
-use Livewire\Component;
-use App\Models\User;
-use App\Models\Siswa;
 use App\Models\Guru;
 use App\Models\Kelas;
+use App\Models\Siswa;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class UserManagement extends Component
 {
-    public $users, $kelasList;
+    use WithPagination;
+
+    public $kelasList;
     public $name, $email, $username, $password, $role = 'siswa';
-    
+
+    public $search = '';
+    public $roleFilter = '';
+    public $perPage = 25;
+
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'roleFilter' => ['except' => ''],
+    ];
+
     // Spesifik Siswa
     public $nis, $kelas_id, $ortu_user_id;
     // Spesifik Guru
@@ -27,13 +39,40 @@ class UserManagement extends Component
 
     public function mount()
     {
-        $this->loadUsers();
-        $this->kelasList = Kelas::all();
+        $this->kelasList = Kelas::orderBy('nama_kelas')->get();
     }
 
-    public function loadUsers()
+    public function updatingSearch(): void
     {
-        $this->users = User::with(['siswa', 'guru'])->get();
+        $this->resetPage();
+    }
+
+    public function updatingRoleFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    /**
+     * Daftar user tidak dimuat semua sekaligus: sekolah punya ratusan akun dan
+     * memuat semuanya akan ikut terkirim ke browser pada setiap permintaan.
+     */
+    protected function query()
+    {
+        $search = trim((string) $this->search);
+        $like = $search === '' ? null : '%'.addcslashes($search, '%_\\').'%';
+
+        return User::with(['siswa', 'guru'])
+            ->when($like !== null, function ($query) use ($like) {
+                $query->where(function ($inner) use ($like) {
+                    $inner->where('name', 'like', $like)
+                        ->orWhere('username', 'like', $like)
+                        ->orWhere('email', 'like', $like)
+                        ->orWhereHas('siswa', fn ($s) => $s->where('nis', 'like', $like))
+                        ->orWhereHas('guru', fn ($g) => $g->where('nip', 'like', $like));
+                });
+            })
+            ->when($this->roleFilter !== '', fn ($query) => $query->where('role', $this->roleFilter))
+            ->orderBy('name');
     }
 
     public function resetFields()
@@ -112,7 +151,6 @@ class UserManagement extends Component
         session()->flash('message', ($this->isEdit ? 'User Updated.' : 'User Created.')
             . ' Username: ' . $username . ($this->password ? '' : ' (password = username)'));
         $this->resetFields();
-        $this->loadUsers();
     }
 
     public function deriveUsername(): ?string
@@ -158,11 +196,12 @@ class UserManagement extends Component
     {
         User::find($id)->delete();
         session()->flash('message', 'User Deleted Successfully.');
-        $this->loadUsers();
     }
 
     public function render()
     {
-        return view('livewire.admin.user-management')->layout('components.layouts.app');
+        return view('livewire.admin.user-management', [
+            'users' => $this->query()->paginate($this->perPage),
+        ])->layout('components.layouts.app');
     }
 }

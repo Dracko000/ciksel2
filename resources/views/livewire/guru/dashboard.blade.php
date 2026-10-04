@@ -1,36 +1,76 @@
-<div>
-    <h2 class="text-2xl font-bold mb-4">Dashboard Guru</h2>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-        <a href="{{ route('guru.absensi') }}" class="bg-blue-600 rounded-lg shadow-md p-6 text-white hover:bg-blue-700 transition">
-            <h3 class="text-xl font-bold mb-2">Absensi Kelas</h3>
-            <p class="text-blue-100">Pantau kehadiran siswa di kelas Anda hari ini.</p>
-        </a>
-        <a href="#" class="bg-green-600 rounded-lg shadow-md p-6 text-white hover:bg-green-700 transition">
-            <h3 class="text-xl font-bold mb-2">Absen Manual</h3>
-            <p class="text-green-100">Input absensi manual jika siswa tidak membawa kartu.</p>
-        </a>
-        <a href="#" class="bg-purple-600 rounded-lg shadow-md p-6 text-white hover:bg-purple-700 transition">
-            <h3 class="text-xl font-bold mb-2">Jadwal Mengajar</h3>
-            <p class="text-purple-100">Kelola dan lihat jadwal mengajar Anda.</p>
-        </a>
+<div class="space-y-6">
+    <div>
+        <h2 class="page-title">Dashboard Guru</h2>
+        <p class="page-subtitle">
+            Selamat datang, {{ auth()->user()->name }}. Berikut ringkasan aktivitas mengajar Anda.
+        </p>
     </div>
 
-    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-        <h3 class="text-lg font-bold mb-4 border-b pb-2">Jadwal Mengajar Hari Ini</h3>
-        @if($jadwalHariIni->isEmpty())
-            <p class="text-gray-500">Tidak ada jadwal mengajar hari ini.</p>
-        @else
-            <ul class="divide-y divide-gray-200">
-                @foreach($jadwalHariIni as $jadwal)
-                <li class="py-4 flex">
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900">{{ $jadwal->mata_pelajaran }} - Kelas {{ $jadwal->kelas->nama_kelas }}</p>
-                        <p class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($jadwal->jam_mulai)->format('H:i') }} s/d {{ \Carbon\Carbon::parse($jadwal->jam_selesai)->format('H:i') }}</p>
-                    </div>
-                </li>
-                @endforeach
-            </ul>
-        @endif
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <a href="{{ route('guru.absensi') }}"
+           class="card flex flex-col gap-2 p-5 transition hover:border-brand-300 hover:bg-brand-50">
+            <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+                <x-icon name="clipboard" class="h-5 w-5" />
+            </span>
+            <h3 class="text-sm font-semibold text-slate-800">Absensi Kelas</h3>
+            <p class="text-sm text-slate-500">Pantau kehadiran siswa di kelas Anda hari ini.</p>
+        </a>
+
+        <a href="{{ route('guru.nilai') }}"
+           class="card flex flex-col gap-2 p-5 transition hover:border-brand-300 hover:bg-brand-50">
+            <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+                <x-icon name="grade" class="h-5 w-5" />
+            </span>
+            <h3 class="text-sm font-semibold text-slate-800">Input Nilai</h3>
+            <p class="text-sm text-slate-500">Kelola nilai siswa untuk semester berjalan.</p>
+        </a>
+
+        <div class="card flex flex-col gap-2 bg-slate-50 p-5">
+            <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-400">
+                <x-icon name="document" class="h-5 w-5" />
+            </span>
+            <h3 class="flex items-center gap-2 text-sm font-semibold text-slate-500">
+                Absen Manual
+                <span class="badge badge-neutral">Segera</span>
+            </h3>
+            <p class="text-sm text-slate-400">
+                Input absensi manual jika siswa tidak membawa kartu.
+            </p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="section-title">Jadwal Mengajar Hari Ini</h3>
+            <span class="badge badge-neutral">{{ $jadwalHariIni->count() }} sesi</span>
+        </div>
+
+        <div class="card-body">
+            @if ($jadwalHariIni->isEmpty())
+                <p class="py-6 text-center text-sm text-slate-500">
+                    Tidak ada jadwal mengajar hari ini.
+                </p>
+            @else
+                <ul class="divide-y divide-slate-100">
+                    @foreach ($jadwalHariIni as $jadwal)
+                        <li wire:key="jadwal-{{ $jadwal->id }}" class="flex items-center gap-4 py-3">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+                                <x-icon name="book" class="h-4 w-4" />
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-sm font-medium text-slate-800">
+                                    {{ $jadwal->mata_pelajaran }} &mdash; Kelas {{ $jadwal->kelas?->nama_kelas ?? '-' }}
+                                </p>
+                                <p class="text-xs text-slate-500">
+                                    {{ \Carbon\Carbon::parse($jadwal->jam_mulai)->format('H:i') }}
+                                    s/d
+                                    {{ \Carbon\Carbon::parse($jadwal->jam_selesai)->format('H:i') }}
+                                </p>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
     </div>
 </div>

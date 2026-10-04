@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\iclockController;
 use App\Livewire\Auth\Login;
 
@@ -44,19 +43,24 @@ Route::middleware(['auth'])->group(function () {
     // Redirect based on role
     Route::get('/', function () {
         $role = auth()->user()->role;
-        if ($role === 'admin') return redirect('/admin/dashboard');
-        if ($role === 'guru') return redirect('/guru/dashboard');
-        if ($role === 'ortu') return redirect('/ortu/dashboard');
-        return redirect('/siswa/dashboard');
+
+        return match ($role) {
+            'admin' => redirect('/admin/dashboard'),
+            'guru' => redirect('/guru/dashboard'),
+            default => redirect('/siswa/dashboard'),
+        };
     });
 
     // Admin Routes
     Route::middleware(['role:admin'])->group(function () {
         Route::get('/admin/dashboard', App\Livewire\Admin\Dashboard::class)->name('admin.dashboard');
         Route::get('/admin/users', App\Livewire\Admin\UserManagement::class)->name('admin.users');
+        Route::get('/admin/kelas', App\Livewire\Admin\KelasManagement::class)->name('admin.kelas');
+        Route::get('/admin/ekstrakulikuler', App\Livewire\Admin\EkstrakulikulerManagement::class)->name('admin.ekstrakulikuler');
         Route::get('/admin/absensi', App\Livewire\Admin\AbsensiMonitor::class)->name('admin.absensi');
         Route::get('/admin/informasi', App\Livewire\Admin\InformasiSekolahManagement::class)->name('admin.info');
         Route::get('/admin/konfirmasi', App\Livewire\Admin\KonfirmasiIjin::class)->name('admin.konfirmasi');
+        Route::get('/admin/izin', App\Livewire\Admin\InputIjin::class)->name('admin.izin');
         Route::get('/admin/devices', App\Livewire\Admin\DeviceManagement::class)->name('admin.devices');
         Route::get('/admin/laporan', App\Livewire\Admin\LaporanBulanan::class)->name('admin.laporan');
     });
@@ -68,15 +72,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/guru/nilai', App\Livewire\Guru\InputNilai::class)->name('guru.nilai');
     });
 
-    // Ortu Routes
-    Route::middleware(['role:ortu'])->group(function () {
-        Route::get('/ortu/dashboard', App\Livewire\Ortu\Dashboard::class)->name('ortu.dashboard');
-        Route::get('/ortu/ijin', App\Livewire\Ortu\InputIjin::class)->name('ortu.ijin');
-        Route::get('/ortu/raport/{siswa_id}', [App\Http\Controllers\RaportController::class, 'download'])->name('ortu.raport.download');
-    });
-
     // Siswa Routes
     Route::middleware(['role:siswa'])->group(function () {
-        Route::get('/siswa/dashboard', function() { return view('components.layouts.app', ['slot' => '<h1 class="text-2xl font-bold mb-4">Siswa Dashboard</h1>']); })->name('siswa.dashboard');
+        Route::get('/siswa/dashboard', App\Livewire\Siswa\Dashboard::class)->name('siswa.dashboard');
     });
 });

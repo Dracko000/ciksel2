@@ -27,5 +27,8 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <!-- Tes berjalan di database terpisah. Database produksi 'adms' berisi
+             data sekolah sungguhan dan tidak boleh tersentuh oleh test. -->
+        <env name="DB_DATABASE" value="adms_testing"/>
     </php>
 </phpunit>

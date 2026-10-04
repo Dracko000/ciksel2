@@ -12,7 +12,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Mesin absensi menghubungi server terus-menerus, sehingga device yang
+        // diam perlu dipantau tiap beberapa menit, dan pengingat jadwal dikirim
+        // sekali pagi sebelum kegiatan dimulai.
+        $schedule->command('adms:device-heartbeat')->everyFiveMinutes();
+        $schedule->command('adms:device-heartbeat', ['--jadwal' => true])
+            ->weekdays()
+            ->dailyAt('06:45');
     }
 
     /**
