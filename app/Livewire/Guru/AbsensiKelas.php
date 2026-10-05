@@ -31,7 +31,7 @@ class AbsensiKelas extends Component
         $attendances = collect();
 
         if ($this->kelas_id) {
-            $siswaList = Siswa::where('kelas_id', $this->kelas_id)->get();
+            $siswaList = Siswa::with('kelas')->where('kelas_id', $this->kelas_id)->get();
             $zktecoIds = $siswaList->pluck('wajah_id_zkteco')->filter()->toArray();
 
             if (!empty($zktecoIds)) {

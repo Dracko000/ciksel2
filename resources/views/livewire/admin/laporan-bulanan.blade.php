@@ -3,7 +3,7 @@
         <div>
             <h2 class="page-title">Laporan Presensi Bulanan</h2>
             <p class="page-subtitle">
-                Rekapitulasi kehadiran siswa per bulan untuk SDN Cikampek Selatan 2.
+                Rekapitulasi kehadiran siswa per bulan untuk {{ config('app.school_name') }}.
             </p>
         </div>
 
@@ -22,6 +22,16 @@
                 <select id="tahun" wire:model="year" class="input">
                     @foreach (range(date('Y') - 2, date('Y')) as $y)
                         <option value="{{ $y }}">{{ $y }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="w-44">
+                <label for="kelasFilter" class="label">Kelas</label>
+                <select id="kelasFilter" wire:model="kelasFilter" class="input">
+                    <option value="">Semua Kelas</option>
+                    @foreach ($kelasList as $kelas)
+                        <option value="{{ $kelas->id }}">{{ $kelas->nama_kelas }}</option>
                     @endforeach
                 </select>
             </div>
@@ -49,27 +59,40 @@
                     @forelse ($reportData as $data)
                         @php
                             $pct = round(($data['hadir'] / 25) * 100);
+
+                            // Warna membawa informasi di sini: hijau berarti
+                            // kehadiran bagus, amber perlu perhatian, merah
+                            // berarti bermasalah. Warna brand tidak dipakai
+                            // karena "merah" sudah berarti bahaya di aplikasi.
+                            [$warnaBar, $warnaAngka] = match (true) {
+                                $pct >= 90 => ['bg-sukses-600', 'text-sukses-700'],
+                                $pct >= 75 => ['bg-peringatan-600', 'text-peringatan-700'],
+                                $pct >= 50 => ['bg-peringatan-100', 'text-peringatan-800'],
+                                default => ['bg-bahaya-600', 'text-bahaya-700'],
+                            };
                         @endphp
                         <tr wire:key="laporan-{{ $data['nis'] }}">
-                            <td class="font-mono text-xs">{{ $data['nis'] }}</td>
-                            <td class="font-medium text-slate-800">{{ $data['nama'] }}</td>
+                            <td class="num text-xs">{{ $data['nis'] }}</td>
+                            <td class="font-medium text-maroon-50">{{ $data['nama'] }}</td>
                             <td>{{ $data['kelas'] }}</td>
                             <td>
-                                <span class="badge badge-brand">{{ $data['hadir'] }} Hari</span>
+                                <span class="badge {{ $data['hadir'] > 0 ? 'badge-success' : 'badge-danger' }}">
+                                    {{ $data['hadir'] }} Hari
+                                </span>
                             </td>
                             <td>
                                 <div class="flex items-center gap-3">
-                                    <div class="h-2 w-24 overflow-hidden rounded-full bg-slate-100">
-                                        <div class="h-2 rounded-full bg-brand-600"
+                                    <div class="h-2 w-24 overflow-hidden rounded-full bg-maroon-800">
+                                        <div class="h-2 rounded-full {{ $warnaBar }}"
                                              style="width: {{ min($pct, 100) }}%"></div>
                                     </div>
-                                    <span class="text-xs font-medium tabular-nums text-slate-500">{{ $pct }}%</span>
+                                    <span class="num text-xs font-medium {{ $warnaAngka }}">{{ $pct }}%</span>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="py-10 text-center text-sm text-slate-500">
+                            <td colspan="5" class="py-10 text-center text-sm text-maroon-200">
                                 Belum ada data presensi pada periode ini.
                             </td>
                         </tr>

@@ -6,13 +6,7 @@
         </p>
     </div>
 
-    @if (session()->has('message'))
-        <div class="card flex items-center gap-2 border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700"
-             role="alert">
-            <x-icon name="check" class="h-4 w-4 shrink-0" />
-            <span>{{ session('message') }}</span>
-        </div>
-    @endif
+<x-flash-toast />
 
     <div class="card">
         <div class="card-header">
@@ -88,7 +82,7 @@
                             </button>
                             <button type="button" wire:click="delete({{ $item->id }})"
                                     onclick="confirm('Hapus informasi ini?') || event.stopImmediatePropagation()"
-                                    class="btn btn-sm text-rose-600 hover:bg-rose-50">
+                                    class="btn btn-sm text-bahaya-700 hover:bg-bahaya-50">
                                 <x-icon name="trash" class="h-4 w-4" />
                                 Hapus
                             </button>

@@ -42,7 +42,7 @@
                             <td class="whitespace-nowrap">
                                 {{ \Carbon\Carbon::parse($log->timestamp)->translatedFormat('d M Y H:i') }} WIB
                             </td>
-                            <td class="font-mono text-xs">{{ $log->sn }}</td>
+                            <td class="num text-xs">{{ $log->sn }}</td>
                             <td>
                                 <span @class([
                                     'badge badge-success' => (int) $log->status1 !== 0,
@@ -52,7 +52,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="py-10 text-center text-sm text-slate-500">
+                            <td colspan="3" class="py-10 text-center text-sm text-maroon-200">
                                 Belum ada data presensi.
                             </td>
                         </tr>

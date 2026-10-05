@@ -1,4 +1,4 @@
-@props(['title' => null, 'iconTone' => 'brand', 'badge' => null, 'badgeTone' => 'neutral'])
+@props(['title' => null, 'iconTone' => 'info', 'badge' => null, 'badgeTone' => 'neutral'])
 
 {{--
     Kartu statistik/metrik.
@@ -13,18 +13,22 @@
 --}}
 
 @php
+    /* Default memakai info, bukan brand: sehingga stat card yang tidak
+       menyebut tone tidak lagi merah semua. Merah dicadangkan untuk
+       "kamu di sini" dan aksi utama. */
     $iconToneClass = match ($iconTone) {
-        'success' => 'bg-emerald-50 text-emerald-600',
-        'warning' => 'bg-amber-50 text-amber-600',
-        'danger' => 'bg-rose-50 text-rose-600',
+        'success' => 'bg-sukses-50 text-sukses-700',
+        'warning' => 'bg-peringatan-50 text-peringatan-700',
+        'danger' => 'bg-bahaya-50 text-bahaya-700',
         'neutral' => 'bg-slate-100 text-slate-500',
-        default => 'bg-brand-50 text-brand-600',
+        'brand' => 'bg-brand-50 text-brand-600',
+        default => 'bg-info-50 text-info-700',
     };
 
     $badgeToneClass = match ($badgeTone) {
-        'success' => 'bg-emerald-50 text-emerald-700',
-        'warning' => 'bg-amber-50 text-amber-700',
-        'danger' => 'bg-rose-50 text-rose-700',
+        'success' => 'bg-sukses-50 text-sukses-700',
+        'warning' => 'bg-peringatan-50 text-peringatan-700',
+        'danger' => 'bg-bahaya-50 text-bahaya-800',
         'brand' => 'bg-brand-50 text-brand-700',
         default => 'bg-slate-100 text-slate-600',
     };

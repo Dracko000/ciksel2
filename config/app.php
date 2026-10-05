@@ -187,4 +187,16 @@ return [
         'DataTables' => Yajra\DataTables\Facades\DataTables::class,
     ])->toArray(),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Nama Sekolah
+    |--------------------------------------------------------------------------
+    |
+    | Dipakai di <title>, sidebar, header, dan footer supaya nama sekolah
+    | tidak tersebar hardcoded di banyak view.
+    |
+    */
+
+    'school_name' => env('SCHOOL_NAME', 'SDN Cikampek Selatan 2'),
+
 ];

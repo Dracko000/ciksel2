@@ -9,7 +9,7 @@
 
         <div class="flex flex-wrap items-center gap-2">
             <span class="badge badge-success">
-                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                <span class="h-1.5 w-1.5 rounded-full bg-sukses-600"></span>
                 Sistem online
             </span>
 
@@ -20,30 +20,70 @@
         </div>
     </div>
 
+    @php
+        /* Tone per kartu dipilih sesuai apa yang diukur, bukan semuanya
+           merah: total siswa = netral, kehadiran = hijau, izin yang
+           menunggu = amber, mesin = biru. Warna jadi informatif. */
+        $cards = [
+            [
+                'label' => 'Total Siswa',
+                'value' => $stats['total_siswa'],
+                'icon' => 'users',
+                'delta' => 'Siswa aktif terdaftar',
+                'tone' => 'neutral',
+            ],
+            [
+                'label' => 'Hadir Hari Ini',
+                'value' => $stats['absensi_hari_ini'],
+                'icon' => 'check',
+                'delta' => 'Presensi tercatat hari ini',
+                'tone' => 'success',
+            ],
+            [
+                'label' => 'Izin Menunggu',
+                'value' => $stats['izin_menunggu'],
+                'icon' => 'document',
+                'delta' => $stats['izin_menunggu'] > 0 ? 'Perlu ditinjau' : 'Semua selesai',
+                'deltaUp' => $stats['izin_menunggu'] > 0,
+                'tone' => 'warning',
+            ],
+            [
+                'label' => 'Mesin Online',
+                'value' => $stats['mesin_online'],
+                'icon' => 'device',
+                'delta' => 'Mesin ZKTeco aktif',
+                'tone' => 'info',
+            ],
+        ];
+
+        $statIconTone = [
+            'neutral' => 'bg-slate-100 text-slate-500',
+            'success' => 'bg-sukses-50 text-sukses-700',
+            'warning' => 'bg-peringatan-50 text-peringatan-700',
+            'danger' => 'bg-bahaya-50 text-bahaya-700',
+            'info' => 'bg-info-50 text-info-700',
+        ];
+    @endphp
+
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-<x-card title="Total Siswa" icon-tone="brand">
-    <x-slot name="icon"><x-icon name="users" class="h-5 w-5" /></x-slot>
-    <p class="text-3xl font-semibold tracking-tight">{{ $stats['total_siswa'] }}</p>
-    <p class="mt-1 text-xs text-slate-500">Siswa aktif terdaftar</p>
-</x-card>
+        @foreach ($cards as $card)
+            <div class="stat-card">
+                <span class="stat-icon {{ $statIconTone[$card['tone']] }}">
+                    <x-icon :name="$card['icon']" class="h-5 w-5" />
+                </span>
 
-<x-card title="Guru &amp; Tendik" icon-tone="success">
-    <x-slot name="icon"><x-icon name="clipboard" class="h-5 w-5" /></x-slot>
-    <p class="text-3xl font-semibold tracking-tight">{{ $stats['total_guru'] }}</p>
-    <p class="mt-1 text-xs text-slate-500">Tenaga pendidik</p>
-</x-card>
-
-<x-card title="Total Pengguna" icon-tone="neutral">
-    <x-slot name="icon"><x-icon name="user" class="h-5 w-5" /></x-slot>
-    <p class="text-3xl font-semibold tracking-tight">{{ $stats['total_users'] }}</p>
-    <p class="mt-1 text-xs text-slate-500">Seluruh akun</p>
-</x-card>
-
-<x-card title="Hadir Hari Ini" icon-tone="warning">
-    <x-slot name="icon"><x-icon name="check" class="h-5 w-5" /></x-slot>
-    <p class="text-3xl font-semibold tracking-tight">{{ $stats['absensi_hari_ini'] }}</p>
-    <p class="mt-1 text-xs text-slate-500">Presensi tercatat</p>
-</x-card>
+                <div class="min-w-0">
+                    <p class="stat-value">{{ $card['value'] }}</p>
+                    <p class="stat-label">{{ $card['label'] }}</p>
+                    <p class="stat-delta {{ ($card['deltaUp'] ?? false) ? 'stat-delta-down' : 'text-slate-400' }}">
+                        @if ($card['deltaUp'] ?? false)
+                            <x-icon name="warning" class="h-3.5 w-3.5" />
+                        @endif
+                        {{ $card['delta'] }}
+                    </p>
+                </div>
+            </div>
+        @endforeach
     </div>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -73,12 +113,14 @@
                 </div>
             </div>
 
-            <div class="card bg-brand-600 p-5 text-white">
+            {{-- Kartu gelap sebagai jangkar, bukan merah solid: merah di sini
+                 jadi blok warna terbesar di dashboard tanpa makna status. --}}
+            <div class="card bg-slate-900 p-5 text-white">
                 <h3 class="text-sm font-semibold">Bantuan Teknis</h3>
-                <p class="mt-1 text-sm text-brand-100">
+                <p class="mt-1 text-sm text-slate-300">
                     Sinkronisasi mesin ZKTeco bermasalah atau log absensi tidak masuk?
                 </p>
-                <p class="mt-3 text-xs text-brand-100">
+                <p class="mt-3 text-xs text-slate-400">
                     Hubungi administrator sekolah atau IT sekolah dengan menyertakan nomor seri mesin.
                 </p>
             </div>
@@ -107,21 +149,28 @@
                             @forelse ($latestLogs as $log)
                                 <tr wire:key="log-{{ $log->id }}">
                                     <td class="whitespace-nowrap">
-                                        <span class="block font-medium text-slate-800">
+                                        <span class="block font-medium text-maroon-50">
                                             {{ \Carbon\Carbon::parse($log->timestamp)->format('H:i') }} WIB
                                         </span>
-                                        <span class="block text-xs text-slate-400">
+                                        <span class="block text-xs text-maroon-300">
                                             {{ \Carbon\Carbon::parse($log->timestamp)->translatedFormat('d M Y') }}
                                         </span>
                                     </td>
-                                    <td class="font-mono text-xs">{{ $log->sn }}</td>
-                                    <td class="font-mono text-xs font-medium text-brand-700">{{ $log->employee_id }}</td>
+                                    <td class="num text-xs text-maroon-100">{{ $log->sn }}</td>
+                                    <td class="num text-xs font-medium text-maroon-200">{{ $log->employee_id }}</td>
                                     <td><span class="badge badge-success">Terverifikasi</span></td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="py-10 text-center text-sm text-slate-500">
-                                        Belum ada aktivitas absensi.
+                                    <td colspan="4">
+                                        <div class="empty-state">
+                                            <x-icon name="clipboard" class="h-10 w-10 text-maroon-300" />
+                                            <p class="empty-state-title">Belum ada aktivitas absensi</p>
+                                            <p class="empty-state-text">
+                                                Log absensi akan muncul di sini setelah mesin ZKTeco mengirim
+                                                data pada hari ini.
+                                            </p>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforelse

@@ -113,12 +113,36 @@ class KelasManagementTest extends TestCase
         $kelas = Kelas::create(['nama_kelas' => '5 A']);
         $siswa = $this->makeSiswa('212201109', $kelas->id);
 
-        Livewire::test(KelasManagement::class)
-            ->call('delete', $kelas->id)
+        // Hapus hanya jalan lewat konfirmasi ketik-nama.
+        $component = Livewire::test(KelasManagement::class)
+            ->call('askDelete', $kelas->id)
+            ->assertSet('hapusKelasId', $kelas->id)
+            ->assertSet('hapusKelasNama', '5 A');
+
+        // Salah ketik => kelas belum terhapus.
+        $component->call('confirmHapusKelas')->assertHasErrors('hapusKelasKonfirmasi');
+        $this->assertDatabaseHas('kelas', ['id' => $kelas->id]);
+
+        // Ketik nama yang benar => baru terhapus.
+        $component->set('hapusKelasKonfirmasi', '5 A')
+            ->call('confirmHapusKelas')
             ->assertHasNoErrors();
 
         $this->assertDatabaseMissing('kelas', ['id' => $kelas->id]);
         $this->assertDatabaseHas('siswa', ['id' => $siswa->id, 'kelas_id' => null]);
+    }
+
+    public function test_hapus_kelas_ditolak_saat_nama_tidak_cocok(): void
+    {
+        $kelas = Kelas::create(['nama_kelas' => '5 A']);
+
+        Livewire::test(KelasManagement::class)
+            ->call('askDelete', $kelas->id)
+            ->set('hapusKelasKonfirmasi', '5 B')
+            ->call('confirmHapusKelas')
+            ->assertHasErrors('hapusKelasKonfirmasi');
+
+        $this->assertDatabaseHas('kelas', ['id' => $kelas->id]);
     }
 
     public function test_roster_menampilkan_siswa_kelas_tersebut(): void

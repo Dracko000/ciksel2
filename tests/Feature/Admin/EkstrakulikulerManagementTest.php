@@ -194,8 +194,19 @@ class EkstrakulikulerManagementTest extends TestCase
         $siswa = $this->makeSiswa('212201111');
         $eks->siswa()->attach($siswa->id);
 
-        Livewire::test(EkstrakulikulerManagement::class)
-            ->call('delete', $eks->id)
+        // Hapus hanya jalan lewat konfirmasi ketik-nama.
+        $component = Livewire::test(EkstrakulikulerManagement::class)
+            ->call('askDelete', $eks->id)
+            ->assertSet('hapusEkskulId', $eks->id)
+            ->assertSet('hapusEkskulNama', 'Marching Band');
+
+        // Salah ketik => kegiatan belum terhapus.
+        $component->call('confirmHapusEkskul')->assertHasErrors('hapusEkskulKonfirmasi');
+        $this->assertDatabaseHas('ekstrakulikuler', ['id' => $eks->id]);
+
+        // Ketik nama yang benar => baru terhapus.
+        $component->set('hapusEkskulKonfirmasi', 'Marching Band')
+            ->call('confirmHapusEkskul')
             ->assertHasNoErrors();
 
         $this->assertDatabaseMissing('ekstrakulikuler', ['id' => $eks->id]);

@@ -1,12 +1,12 @@
 <div x-data="{ open: false }" wire:poll.60s="refreshUnreadCount" class="relative">
     <button type="button" @click="open = !open" @keydown.escape.window="open = false"
-            class="relative rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+            class="relative rounded-lg p-2 text-maroon-200 transition hover:bg-maroon-800 hover:text-maroon-50"
             :aria-expanded="open" aria-haspopup="true" aria-label="Notifikasi">
         <x-icon name="bell" class="h-5 w-5" />
 
         @if ($unreadCount > 0)
             <span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full
-                         bg-brand-600 px-1 text-[10px] font-semibold text-white ring-2 ring-white">
+                         bg-brand-600 px-1 text-[10px] font-semibold text-white ring-2 ring-maroon-900">
                 {{ $unreadCount > 99 ? '99+' : $unreadCount }}
             </span>
         @endif

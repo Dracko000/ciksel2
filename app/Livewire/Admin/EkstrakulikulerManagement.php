@@ -131,16 +131,60 @@ class EkstrakulikulerManagement extends Component
         $this->resetValidation();
     }
 
-    public function delete($id)
+    /** Id ekstrakulikuler yang menunggu konfirmasi hapus. */
+    public $hapusEkskulId = null;
+
+    /** Nama ekstrakulikuler yang harus diketik ulang admin. */
+    public $hapusEkskulNama = '';
+
+    /** Teks yang diketik admin; harus sama persis dengan hapusEkskulNama. */
+    public $hapusEkskulKonfirmasi = '';
+
+    /** Jumlah peserta yang ikut terhapus (untuk pesan dampak). */
+    public $hapusEkskulJumlahPeserta = 0;
+
+    /**
+     * Ekstrakulikuler beserta peserta. Sengaja melalui askDelete() lalu
+     * confirmHapusEkskul() supaya admin mengetik nama kegiatan dulu.
+     */
+    public function askDelete($id)
     {
         $item = Ekstrakulikuler::withCount('siswa')->findOrFail($id);
+
+        $this->hapusEkskulId = $item->id;
+        $this->hapusEkskulNama = $item->nama;
+        $this->hapusEkskulJumlahPeserta = $item->siswa_count;
+        $this->hapusEkskulKonfirmasi = '';
+        $this->resetValidation();
+    }
+
+    public function cancelHapusEkskul(): void
+    {
+        $this->reset(['hapusEkskulId', 'hapusEkskulNama', 'hapusEkskulKonfirmasi', 'hapusEkskulJumlahPeserta']);
+        $this->resetValidation();
+    }
+
+    public function confirmHapusEkskul(): void
+    {
+        $typed = trim((string) $this->hapusEkskulKonfirmasi);
+        $expected = trim((string) $this->hapusEkskulNama);
+
+        if ($typed === '' || strcasecmp($typed, $expected) !== 0) {
+            $this->addError('hapusEkskulKonfirmasi', 'Ketik persis "' . $expected . '" untuk melanjutkan.');
+
+            return;
+        }
+
+        $item = Ekstrakulikuler::withCount('siswa')->findOrFail($this->hapusEkskulId);
         $jumlah = $item->siswa_count;
 
         $item->delete();
 
-        if ($this->ekstrakulikulerId === $id) {
+        if ($this->ekstrakulikulerId === $item->id) {
             $this->cancelEdit();
         }
+
+        $this->cancelHapusEkskul();
 
         session()->flash(
             'message',

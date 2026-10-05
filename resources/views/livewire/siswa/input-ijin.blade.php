@@ -6,15 +6,10 @@
         </p>
     </div>
 
-    @if (session()->has('message'))
-        <div class="card flex items-center gap-2 border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700" role="alert">
-            <x-icon name="check" class="h-4 w-4 shrink-0" />
-            <span>{{ session('message') }}</span>
-        </div>
-    @endif
+<x-flash-toast />
 
     @if (! $punyaDataSiswa)
-        <div class="card flex items-start gap-3 border-amber-200 bg-amber-50 p-4 text-sm text-amber-800" role="alert">
+        <div class="card flex items-start gap-3 border-peringatan-100 bg-peringatan-50 p-4 text-sm text-peringatan-800" role="alert">
             <x-icon name="warning" class="mt-0.5 h-4 w-4 shrink-0" />
             <span>Akun ini belum terhubung ke data siswa, jadi pengajuan belum bisa dibuat. Hubungi administrator sekolah.</span>
         </div>
@@ -117,7 +112,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="py-10 text-center text-sm text-slate-500">
+                                        <td colspan="4" class="py-10 text-center text-sm text-maroon-200">
                                             Belum ada pengajuan.
                                         </td>
                                     </tr>
@@ -127,7 +122,10 @@
                     </div>
 
                     @if ($riwayat->hasPages())
-                        <div class="border-t border-slate-200 px-4 py-3">{{ $riwayat->links() }}</div>
+                        <div class="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                            <p class="text-xs text-maroon-200">Menampilkan <span class="num font-medium text-maroon-100">{{ $riwayat->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-maroon-100">{{ $riwayat->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-maroon-100">{{ $riwayat->total() }}</span> pengajuan</p>
+                            <div>{{ $riwayat->links() }}</div>
+                        </div>
                     @endif
                 </div>
             </div>

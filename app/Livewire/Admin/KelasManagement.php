@@ -101,21 +101,63 @@ class KelasManagement extends Component
         $this->resetValidation();
     }
 
+    /** Id kelas yang menunggu konfirmasi hapus. */
+    public $hapusKelasId = null;
+
+    /** Nama kelas yang harus diketik ulang admin. */
+    public $hapusKelasNama = '';
+
+    /** Teks yang diketik admin; harus sama persis dengan hapusKelasNama. */
+    public $hapusKelasKonfirmasi = '';
+
+    /** Jumlah siswa yang ikut kehilangan kelas (untuk pesan dampak). */
+    public $hapusKelasJumlahSiswa = 0;
+
     /**
      * Hapus kelas. Siswa di dalamnya tidak ikut terhapus, kelas_id-nya jadi null
      * karena kolom itu nullable dengan onDelete set null.
+     *
+     * Sengaja tidak bisa dipanggil langsung: view memakai askDelete() lalu
+     * confirmHapusKelas() supaya admin mengetik nama kelas lebih dulu.
      */
-    public function delete($id)
+    public function askDelete($id)
     {
         $kelas = Kelas::withCount('siswa')->findOrFail($id);
 
+        $this->hapusKelasId = $kelas->id;
+        $this->hapusKelasNama = $kelas->nama_kelas;
+        $this->hapusKelasJumlahSiswa = $kelas->siswa_count;
+        $this->hapusKelasKonfirmasi = '';
+        $this->resetValidation();
+    }
+
+    public function cancelHapusKelas(): void
+    {
+        $this->reset(['hapusKelasId', 'hapusKelasNama', 'hapusKelasKonfirmasi', 'hapusKelasJumlahSiswa']);
+        $this->resetValidation();
+    }
+
+    public function confirmHapusKelas(): void
+    {
+        $typed = trim((string) $this->hapusKelasKonfirmasi);
+        $expected = trim((string) $this->hapusKelasNama);
+
+        if ($typed === '' || strcasecmp($typed, $expected) !== 0) {
+            $this->addError('hapusKelasKonfirmasi', 'Ketik persis "' . $expected . '" untuk melanjutkan.');
+
+            return;
+        }
+
+        $kelas = Kelas::withCount('siswa')->findOrFail($this->hapusKelasId);
         $jumlahSiswa = $kelas->siswa_count;
 
         $kelas->delete();
 
-        if ($this->showRosterFor === $id) {
+        if ($this->showRosterFor === $kelas->id) {
             $this->showRosterFor = null;
         }
+
+        $this->cancelHapusKelas();
 
         session()->flash(
             'message',

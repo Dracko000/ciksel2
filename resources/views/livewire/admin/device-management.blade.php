@@ -13,18 +13,13 @@
         </div>
     </div>
 
-    @if (session()->has('message'))
-        <div class="card flex items-start gap-3 border-emerald-200 bg-emerald-50 p-4" role="alert">
-            <x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-            <p class="text-sm font-medium text-emerald-800">{{ session('message') }}</p>
-        </div>
-    @endif
+<x-flash-toast />
 
     @if ($errors->any())
-        <div class="card border-rose-200 bg-rose-50 p-4" role="alert">
+        <div class="card border-bahaya-100 bg-bahaya-50 p-4" role="alert">
             <div class="flex items-start gap-3">
-                <x-icon name="warning" class="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
-                <ul class="space-y-1 text-sm font-medium text-rose-700">
+                <x-icon name="warning" class="mt-0.5 h-4 w-4 shrink-0 text-bahaya-700" />
+                <ul class="space-y-1 text-sm font-medium text-bahaya-800">
                     @foreach ($errors->all() as $error)
                         <li wire:key="error-{{ $loop->index }}">{{ $error }}</li>
                     @endforeach
@@ -141,20 +136,20 @@
                                 @endphp
                                 <tr wire:key="device-{{ $dev->id }}">
                                     <td>
-                                        <span class="rounded-lg bg-slate-100 px-2.5 py-1 font-mono text-xs font-semibold text-slate-700">
+                                        <span class="num rounded-lg bg-maroon-800 px-2.5 py-1 text-xs font-semibold text-maroon-100">
                                             {{ $dev->no_sn }}
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="block font-medium text-slate-800">{{ $dev->nama ?? 'Unit Belum Dinamai' }}</span>
-                                        <span class="mt-0.5 block text-xs text-slate-500">{{ $dev->lokasi ?? 'Lokasi Belum Diatur' }}</span>
+                                        <span class="block font-medium text-maroon-50">{{ $dev->nama ?? 'Unit Belum Dinamai' }}</span>
+                                        <span class="mt-0.5 block text-xs text-maroon-200">{{ $dev->lokasi ?? 'Lokasi Belum Diatur' }}</span>
                                     </td>
                                     <td>
                                         <span class="badge {{ $isOnline ? 'badge-success' : 'badge-danger' }}">
-                                            <span class="h-1.5 w-1.5 rounded-full {{ $isOnline ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
+                                            <span class="h-1.5 w-1.5 rounded-full {{ $isOnline ? 'bg-sukses-600' : 'bg-bahaya-600' }}"></span>
                                             {{ $isOnline ? 'Online' : 'Offline' }}
                                         </span>
-                                        <span class="mt-1 block text-xs text-slate-400">
+                                        <span class="mt-1 block text-xs text-maroon-300">
                                             Sinyal: {{ $dev->online ? \Carbon\Carbon::parse($dev->online)->diffForHumans() : 'Belum pernah konek' }}
                                         </span>
                                     </td>
@@ -182,7 +177,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="py-10 text-center text-sm text-slate-500">
+                                    <td colspan="4" class="py-10 text-center text-sm text-maroon-200">
                                         Belum ada mesin ZKTeco yang terhubung.
                                     </td>
                                 </tr>

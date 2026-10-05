@@ -13,18 +13,13 @@
         </div>
     </div>
 
-    @if (session()->has('message'))
-        <div class="card flex items-start gap-3 border-emerald-200 bg-emerald-50 p-4" role="alert">
-            <x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-            <p class="text-sm font-medium text-emerald-800">{{ session('message') }}</p>
-        </div>
-    @endif
+<x-flash-toast />
 
     @if ($errors->any())
-        <div class="card border-rose-200 bg-rose-50 p-4" role="alert">
+        <div class="card border-bahaya-100 bg-bahaya-50 p-4" role="alert">
             <div class="flex items-start gap-3">
-                <x-icon name="warning" class="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
-                <ul class="space-y-1 text-sm font-medium text-rose-700">
+                <x-icon name="warning" class="mt-0.5 h-4 w-4 shrink-0 text-bahaya-700" />
+                <ul class="space-y-1 text-sm font-medium text-bahaya-800">
                     @foreach ($errors->all() as $error)
                         <li wire:key="error-{{ $loop->index }}">{{ $error }}</li>
                     @endforeach
@@ -130,9 +125,19 @@
                 <tbody>
                     @forelse ($kelasList as $kelas)
                         <tr wire:key="kelas-{{ $kelas->id }}">
-                            <td class="font-medium text-slate-800">{{ $kelas->nama_kelas }}</td>
-                            <td>{{ $kelas->waliKelas?->nama ?? 'Belum ditentukan' }}</td>
-                            <td class="text-center">{{ $kelas->siswa_count }}</td>
+                            <td class="font-medium text-maroon-50">{{ $kelas->nama_kelas }}</td>
+                            <td>
+                                @if ($kelas->waliKelas)
+                                    {{ $kelas->waliKelas->nama }}
+                                @else
+                                    <span class="badge badge-warning">Belum ditentukan</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <span class="badge {{ $kelas->siswa_count > 0 ? 'badge-info' : 'badge-neutral' }}">
+                                    {{ $kelas->siswa_count }}
+                                </span>
+                            </td>
                             <td>
                                 <div class="flex flex-wrap justify-end gap-2">
                                     <button
@@ -153,9 +158,9 @@
                                     </button>
                                     <button
                                         type="button"
-                                        wire:click="delete({{ $kelas->id }})"
-                                        wire:confirm="Hapus kelas {{ $kelas->nama_kelas }}? {{ $kelas->siswa_count }} siswa akan kehilangan kelas."
+                                        wire:click="askDelete({{ $kelas->id }})"
                                         class="btn btn-sm btn-danger"
+                                        aria-label="Hapus kelas {{ $kelas->nama_kelas }}"
                                     >
                                         <x-icon name="trash" class="h-3.5 w-3.5" />
                                         Hapus
@@ -165,7 +170,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="py-10 text-center text-sm text-slate-500">
+                            <td colspan="4" class="py-10 text-center text-sm text-maroon-200">
                                 Belum ada kelas. Tambahkan lewat form di atas.
                             </td>
                         </tr>
@@ -175,7 +180,10 @@
         </div>
 
         @if ($kelasList->hasPages())
-            <div class="border-t border-slate-200 px-5 py-4">{{ $kelasList->links() }}</div>
+            <div class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-xs text-maroon-200">Menampilkan <span class="num font-medium text-maroon-100">{{ $kelasList->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-maroon-100">{{ $kelasList->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-maroon-100">{{ $kelasList->total() }}</span> kelas</p>
+                <div>{{ $kelasList->links() }}</div>
+            </div>
         @endif
     </div>
 
@@ -214,9 +222,9 @@
                     <tbody>
                         @forelse ($roster as $index => $row)
                             <tr wire:key="roster-{{ $row->id }}">
-                                <td class="text-slate-400">{{ $roster->firstItem() + $index }}</td>
-                                <td class="font-medium text-slate-800">{{ $row->nama }}</td>
-                                <td class="font-mono text-xs">{{ $row->nis }}</td>
+                                <td class="text-maroon-300">{{ $roster->firstItem() + $index }}</td>
+                                <td class="font-medium text-maroon-50">{{ $row->nama }}</td>
+                                <td class="num text-xs">{{ $row->nis }}</td>
                                 <td>{{ $row->user?->username ?? '-' }}</td>
                                 <td>
                                     <div class="flex justify-end">
@@ -235,7 +243,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-10 text-center text-sm text-slate-500">
+                                <td colspan="5" class="py-10 text-center text-sm text-maroon-200">
                                     Kelas ini belum punya siswa.
                                 </td>
                             </tr>
@@ -245,8 +253,26 @@
             </div>
 
             @if ($roster->hasPages())
-                <div class="border-t border-slate-200 px-5 py-4">{{ $roster->links() }}</div>
+                <div class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p class="text-xs text-maroon-200">Menampilkan <span class="num font-medium text-maroon-100">{{ $roster->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-maroon-100">{{ $roster->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-maroon-100">{{ $roster->total() }}</span> siswa</p>
+                    <div>{{ $roster->links() }}</div>
+                </div>
             @endif
         </div>
     @endif
+
+    {{-- Hapus kelas: admin wajib mengetik ulang nama kelas --}}
+    <x-confirm-delete-modal
+        :open="$hapusKelasId !== null"
+        title="Hapus kelas?"
+        :target-name="$hapusKelasNama"
+        :confirm-value="$hapusKelasKonfirmasi"
+        input-name="hapusKelasKonfirmasi"
+        error-key="hapusKelasKonfirmasi"
+        confirm-method="confirmHapusKelas"
+        cancel-method="cancelHapusKelas"
+        :impact="$hapusKelasJumlahSiswa > 0
+            ? $hapusKelasJumlahSiswa . ' siswa di dalam kelas ini akan kehilangan kelasnya dan harus dipindahkan secara manual. Tindakan ini tidak dapat dibatalkan.'
+            : 'Kelas akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.'"
+    />
 </div>

@@ -8,8 +8,8 @@
 
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <a href="{{ route('guru.absensi') }}"
-           class="card flex flex-col gap-2 p-5 transition hover:border-brand-300 hover:bg-brand-50">
-            <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+           class="card flex flex-col gap-2 p-5 transition hover:border-info-100 hover:bg-info-50">
+            <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-info-50 text-info-700">
                 <x-icon name="clipboard" class="h-5 w-5" />
             </span>
             <h3 class="text-sm font-semibold text-slate-800">Absensi Kelas</h3>
@@ -17,8 +17,8 @@
         </a>
 
         <a href="{{ route('guru.nilai') }}"
-           class="card flex flex-col gap-2 p-5 transition hover:border-brand-300 hover:bg-brand-50">
-            <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+           class="card flex flex-col gap-2 p-5 transition hover:border-info-100 hover:bg-info-50">
+            <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-info-50 text-info-700">
                 <x-icon name="grade" class="h-5 w-5" />
             </span>
             <h3 class="text-sm font-semibold text-slate-800">Input Nilai</h3>

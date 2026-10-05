@@ -15,7 +15,7 @@
                 </h2>
                 <p class="mt-3 text-sm leading-relaxed text-slate-300">
                     Sistem Informasi Akademik &amp; Absensi Digital Terintegrasi
-                    SDN Cikampek Selatan 2.
+                    {{ config('app.school_name') }}.
                 </p>
             </div>
         </div>
@@ -26,8 +26,8 @@
                     <x-icon name="book" class="h-5 w-5" />
                 </span>
                 <div>
-                    <p class="text-lg font-semibold tracking-tight text-slate-900">SIAKAD</p>
-                    <p class="text-xs text-slate-500">SDN Cikampek Selatan 2</p>
+                    <p class="text-lg font-semibold tracking-tight text-slate-900">ADMS</p>
+                    <p class="text-xs text-slate-500">{{ config('app.school_name') }}</p>
                 </div>
             </div>
 

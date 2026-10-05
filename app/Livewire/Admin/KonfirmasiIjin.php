@@ -2,13 +2,32 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\Kelas;
 use App\Models\PengajuanIjin;
 use App\Notifications\IzinDiputuskan;
 use App\Support\Notifikasi;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 class KonfirmasiIjin extends Component
 {
+    use WithPagination;
+
+    /**
+     * Filter kelas pengaju. String kosong berarti semua kelas.
+     */
+    public $kelasFilter = '';
+
+    public function updatingKelasFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilter(): void
+    {
+        $this->kelasFilter = '';
+        $this->resetPage();
+    }
     public function approve($id)
     {
         $this->putuskan($id, 'disetujui');
@@ -47,10 +66,22 @@ class KonfirmasiIjin extends Component
 
     public function render()
     {
-        $pengajuan = PengajuanIjin::with('siswa')->latest()->paginate(20);
+        $pengajuan = PengajuanIjin::with('siswa.kelas')
+            // Pengajuan izin hanya bisa berasal dari siswa, jadi filter
+            // kelas ditelusuri lewat relasi siswa.
+            ->when(
+                $this->kelasFilter !== '',
+                fn ($query) => $query->whereHas(
+                    'siswa',
+                    fn ($siswa) => $siswa->where('kelas_id', $this->kelasFilter)
+                )
+            )
+            ->latest()
+            ->paginate(20);
 
         return view('livewire.admin.konfirmasi-ijin', [
             'pengajuan' => $pengajuan,
+            'kelasList' => Kelas::orderBy('nama_kelas')->get(['id', 'nama_kelas']),
         ])->layout('components.layouts.app');
     }
 }

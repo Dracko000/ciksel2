@@ -6,13 +6,7 @@
         </p>
     </div>
 
-    @if (session()->has('message'))
-        <div class="card flex items-center gap-2 border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700"
-             role="alert">
-            <x-icon name="check" class="h-4 w-4 shrink-0" />
-            <span>{{ session('message') }}</span>
-        </div>
-    @endif
+<x-flash-toast />
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div class="lg:col-span-1">
@@ -111,9 +105,9 @@
                                     }
                                 @endphp
                                 <tr wire:key="nilai-{{ $n->id }}">
-                                    <td class="font-medium text-slate-800">{{ $n->mata_pelajaran }}</td>
+                                    <td class="font-medium text-maroon-50">{{ $n->mata_pelajaran }}</td>
                                     <td>
-                                        <span class="text-base font-semibold tabular-nums text-slate-800">
+                                        <span class="text-base font-semibold tabular-nums text-maroon-50">
                                             {{ $n->nilai_angka }}
                                         </span>
                                     </td>
@@ -123,7 +117,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="py-10 text-center text-sm text-slate-500">
+                                    <td colspan="3" class="py-10 text-center text-sm text-maroon-200">
                                         Belum ada nilai untuk siswa ini.
                                     </td>
                                 </tr>

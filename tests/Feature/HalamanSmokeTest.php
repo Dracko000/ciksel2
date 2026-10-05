@@ -23,7 +23,7 @@ class HalamanSmokeTest extends TestCase
         $this->get('/login')
             ->assertOk()
             ->assertSee('Masuk ke akun Anda', escape: false)
-            ->assertSee('SIAKAD');
+            ->assertSee('ADMS');
     }
 
     public function test_halaman_admin_semua_dapat_dirender(): void
@@ -109,6 +109,38 @@ class HalamanSmokeTest extends TestCase
     public function test_tamu_diarahkan_ke_login(): void
     {
         $this->get('/admin/dashboard')->assertRedirect('/login');
+    }
+
+    /** Keputusan desain: latar tabel dan halaman bermerek merah lembut
+     *  (bukan putih, bukan merah pekat). Merah penuh tetap hanya untuk
+     *  aksi utama, posisi aktif, dan status. */
+    public function test_latar_tabel_dan_halaman_merah_lembut(): void
+    {
+        $admin = $this->buatUser('admin');
+        $html = $this->actingAs($admin)->get('/admin/dashboard')
+            ->assertOk()
+            ->getContent();
+
+        // Tidak boleh kembali ke putih/netral.
+        $this->assertStringNotContainsString('bg-slate-50" ', $html, 'Header tabel tidak boleh netral.');
+        $this->assertStringNotContainsString('card bg-brand-600', $html, 'Kartu bantuan teknis tidak boleh merah pekat.');
+
+        foreach (['Total Siswa', 'Hadir Hari Ini', 'Izin Menunggu', 'Mesin Online'] as $label) {
+            $this->assertStringContainsString($label, $html);
+        }
+
+        // Aksen brand tetap dipertahankan.
+        $this->assertStringContainsString('text-brand-700', $html);
+    }
+
+    public function test_header_tabel_dan_canvas_memakai_maroon(): void
+    {
+        $css = file_get_contents(resource_path('css/app.css'));
+
+        $this->assertStringContainsString('--color-canvas: var(--color-maroon-900)', $css, 'Canvas halaman harus maroon gelap.');
+        $this->assertMatchesRegularExpression('/\.table thead \{[^}]*bg-maroon-800/', $css, 'Header tabel harus maroon.');
+        $this->assertMatchesRegularExpression('/\.table tbody tr \{[^}]*bg-maroon-900 transition/', $css, 'Baris tabel harus maroon gelap.');
+        $this->assertMatchesRegularExpression('/\.table th \{[^}]*text-white/', $css, 'Teks header kolom harus putih agar kontras >= 4.5:1 di atas maroon.');
     }
 
     private function buatUser(string $role): User

@@ -13,18 +13,13 @@
         </div>
     </div>
 
-    @if (session()->has('message'))
-        <div class="card flex items-start gap-3 border-emerald-200 bg-emerald-50 p-4" role="alert">
-            <x-icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-            <p class="text-sm font-medium text-emerald-800">{{ session('message') }}</p>
-        </div>
-    @endif
+<x-flash-toast />
 
     @if ($errors->any())
-        <div class="card border-rose-200 bg-rose-50 p-4" role="alert">
+        <div class="card border-bahaya-100 bg-bahaya-50 p-4" role="alert">
             <div class="flex items-start gap-3">
-                <x-icon name="warning" class="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
-                <ul class="space-y-1 text-sm font-medium text-rose-700">
+                <x-icon name="warning" class="mt-0.5 h-4 w-4 shrink-0 text-bahaya-700" />
+                <ul class="space-y-1 text-sm font-medium text-bahaya-800">
                     @foreach ($errors->all() as $error)
                         <li wire:key="error-{{ $loop->index }}">{{ $error }}</li>
                     @endforeach
@@ -237,9 +232,9 @@
                     @forelse ($daftar as $item)
                         <tr wire:key="eks-{{ $item->id }}">
                             <td>
-                                <span class="block font-medium text-slate-800">{{ $item->nama }}</span>
+                                <span class="block font-medium text-maroon-50">{{ $item->nama }}</span>
                                 @if ($item->lokasi)
-                                    <span class="mt-0.5 block text-xs text-slate-500">{{ $item->lokasi }}</span>
+                                    <span class="mt-0.5 block text-xs text-maroon-200">{{ $item->lokasi }}</span>
                                 @endif
                             </td>
                             <td>{{ $item->guru?->nama ?? '-' }}</td>
@@ -247,12 +242,12 @@
                                 @if ($item->hari)
                                     <span class="block">{{ $item->hari }}</span>
                                     @if ($item->jam_mulai)
-                                        <span class="mt-0.5 block font-mono text-xs text-slate-500">
+                                        <span class="num mt-0.5 block text-xs text-maroon-200">
                                             {{ substr((string) $item->jam_mulai, 0, 5) }}@if ($item->jam_selesai)-{{ substr((string) $item->jam_selesai, 0, 5) }}@endif
                                         </span>
                                     @endif
                                 @else
-                                    <span class="text-slate-400">-</span>
+                                    <span class="text-maroon-300">-</span>
                                 @endif
                             </td>
                             <td class="text-center">{{ $item->siswa_count }}</td>
@@ -260,7 +255,7 @@
                                 <button
                                     type="button"
                                     wire:click="toggleAktif({{ $item->id }})"
-                                    class="btn btn-sm {{ $item->aktif ? 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200 hover:bg-emerald-100' : 'bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-200' }}"
+                                    class="btn btn-sm {{ $item->aktif ? 'bg-sukses-50 text-sukses-700 ring-1 ring-inset ring-sukses-100 hover:bg-sukses-100' : 'badge-neutral' }}"
                                 >
                                     {{ $item->aktif ? 'Aktif' : 'Nonaktif' }}
                                 </button>
@@ -277,9 +272,9 @@
                                     </button>
                                     <button
                                         type="button"
-                                        wire:click="delete({{ $item->id }})"
-                                        wire:confirm="Hapus ekstrakulikuler {{ $item->nama }} beserta {{ $item->siswa_count }} peserta?"
+                                        wire:click="askDelete({{ $item->id }})"
                                         class="btn btn-sm btn-danger"
+                                        aria-label="Hapus ekstrakulikuler {{ $item->nama }}"
                                     >
                                         <x-icon name="trash" class="h-3.5 w-3.5" />
                                         Hapus
@@ -289,7 +284,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-10 text-center text-sm text-slate-500">
+                            <td colspan="6" class="py-10 text-center text-sm text-maroon-200">
                                 Belum ada ekstrakulikuler.
                             </td>
                         </tr>
@@ -299,7 +294,10 @@
         </div>
 
         @if ($daftar->hasPages())
-            <div class="border-t border-slate-200 px-5 py-4">{{ $daftar->links() }}</div>
+            <div class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-xs text-maroon-200">Menampilkan <span class="num font-medium text-maroon-100">{{ $daftar->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-maroon-100">{{ $daftar->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-maroon-100">{{ $daftar->total() }}</span> kegiatan</p>
+                <div>{{ $daftar->links() }}</div>
+            </div>
         @endif
     </div>
 
@@ -338,7 +336,7 @@
                                         class="rounded border-slate-300 text-brand-600 focus:ring-brand-600/40"
                                     >
                                     <span class="flex-1 text-sm text-slate-700">{{ $siswa->nama }}</span>
-                                    <span class="font-mono text-xs text-slate-400">{{ $siswa->nis }}</span>
+                                    <span class="num text-xs text-slate-400">{{ $siswa->nis }}</span>
                                 </label>
                             @empty
                                 <p class="py-6 text-center text-sm text-slate-500">
@@ -372,7 +370,7 @@
                                 <div class="min-w-0">
                                     <p class="truncate text-sm font-medium text-slate-800">{{ $row->nama }}</p>
                                     <p class="mt-0.5 text-xs text-slate-500">
-                                        <span class="font-mono">{{ $row->nis }}</span>
+                                        <span class="num">{{ $row->nis }}</span>
                                         @if ($row->pivot->semester)
                                             <span>· {{ $row->pivot->semester }}</span>
                                         @endif
@@ -382,7 +380,7 @@
                                     type="button"
                                     wire:click="lepasPeserta({{ $row->id }})"
                                     wire:confirm="Lepas {{ $row->nama }} dari peserta?"
-                                    class="btn btn-sm shrink-0 text-rose-600 hover:bg-rose-50"
+                                    class="btn btn-sm shrink-0 text-bahaya-700 hover:bg-bahaya-50"
                                 >
                                     <x-icon name="close" class="h-3.5 w-3.5" />
                                     Lepas
@@ -398,4 +396,19 @@
             </div>
         </div>
     @endif
+
+    {{-- Hapus ekstrakulikuler: admin wajib mengetik ulang nama kegiatan --}}
+    <x-confirm-delete-modal
+        :open="$hapusEkskulId !== null"
+        title="Hapus ekstrakulikuler?"
+        :target-name="$hapusEkskulNama"
+        :confirm-value="$hapusEkskulKonfirmasi"
+        input-name="hapusEkskulKonfirmasi"
+        error-key="hapusEkskulKonfirmasi"
+        confirm-method="confirmHapusEkskul"
+        cancel-method="cancelHapusEkskul"
+        :impact="$hapusEkskulJumlahPeserta > 0
+            ? $hapusEkskulJumlahPeserta . ' peserta akan ikut kehilangan akses ke kegiatan ini. Tindakan ini tidak dapat dibatalkan.'
+            : 'Kegiatan akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.'"
+    />
 </div>
