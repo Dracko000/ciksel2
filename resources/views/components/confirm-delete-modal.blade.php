@@ -1,15 +1,19 @@
 {{--
     Modal konfirmasi hapus.
 
-    Hapus tidak dieksekusi dari satu klik. Admin harus mengetik ulang nama
-    entitas (atau kata "HAPUS" untuk penghapusan massal) supaya salah pilih
-    pada daftar hundreds baris tidak berakibat fatal dan tidak bisa
-    dibatalkan.
+    Dua mode:
+    1. Konfirmasi biasa (default): cukup tombol "Hapus" dan "Batal".
+       Dipakai untuk penghapusan akun pengguna.
+    2. Konfirmasi ketik-nama: admin harus mengetik ulang nama entitas
+       (atau "HAPUS" untuk massal) sebelum tombol hapus aktif. Dipakai
+       untuk penghapusan berdampak besar seperti kelas/ekstrakulikuler.
+
+    Atur :require-typing=false untuk memakai mode 1.
 
     Parent.Livewire yang Memakai Component Ini
     ------------------------------------------
     - property boolean pembuka modal, mis. $deleteMode
-    - property teks ketikan, mis. $deleteConfirmText
+    - property teks ketikan, mis. $deleteConfirmText (mode 2)
     - method pembuka/pembatal, mis. cancelDelete
     - method eksekusi, mis. confirmDelete
 --}}
@@ -24,6 +28,7 @@
     'cancelMethod' => 'cancelDelete',
     'confirmLabel' => 'Hapus permanen',
     'confirmValue' => '',
+    'requireTyping' => true,
 ])
 
 @if ($open)
@@ -33,7 +38,7 @@
         aria-modal="true"
         aria-labelledby="konfirmasi-hapus-judul"
         x-data
-        x-init="$nextTick(() => $refs.konfirmasi.focus())"
+        x-init="$nextTick(() => { if ($refs.konfirmasi) { $refs.konfirmasi.focus(); } })"
         x-on:keydown.escape.window="{{ $cancelMethod }}()"
     >
         <div class="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-xl">
@@ -53,25 +58,27 @@
                 </div>
             </div>
 
-            <div class="mt-5">
-                <label for="ketik-nama-entitas" class="label">
-                    Ketik <span class="font-semibold text-slate-800">{{ $targetName }}</span> untuk melanjutkan
-                </label>
+            @if ($requireTyping)
+                <div class="mt-5">
+                    <label for="ketik-nama-entitas" class="label">
+                        Ketik <span class="font-semibold text-slate-800">{{ $targetName }}</span> untuk melanjutkan
+                    </label>
 
-                <input
-                    id="ketik-nama-entitas"
-                    x-ref="konfirmasi"
-                    wire:model="{{ $inputName }}"
-                    type="text"
-                    autocomplete="off"
-                    placeholder="{{ $targetName }}"
-                    class="input @error($errorKey) input-error @enderror"
-                >
+                    <input
+                        id="ketik-nama-entitas"
+                        x-ref="konfirmasi"
+                        wire:model="{{ $inputName }}"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="{{ $targetName }}"
+                        class="input @error($errorKey) input-error @enderror"
+                    >
 
-                @error($errorKey)
-                    <p class="help-error">{{ $message }}</p>
-                @enderror
-            </div>
+                    @error($errorKey)
+                        <p class="help-error">{{ $message }}</p>
+                    @enderror
+                </div>
+            @endif
 
             <div class="mt-6 flex justify-end gap-2">
                 <button type="button" wire:click="{{ $cancelMethod }}" class="btn btn-secondary">
@@ -82,7 +89,7 @@
                     type="button"
                     wire:click="{{ $confirmMethod }}"
                     class="btn btn-danger"
-                    @disabled(trim((string) $confirmValue) === '')
+                    @disabled($requireTyping && trim((string) $confirmValue) === '')
                 >
                     <x-icon name="trash" class="h-4 w-4" />
                     {{ $confirmLabel }}

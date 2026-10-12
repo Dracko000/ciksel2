@@ -3,7 +3,7 @@
         <div>
             <h2 class="page-title">Monitor Absensi Harian</h2>
             <p class="page-subtitle">
-                Rekapitulasi tap mesin ZKTeco berdasarkan tanggal yang dipilih.
+                Rekap tap mesin ZKTeco per orang pada tanggal yang dipilih, dikelompokkan per kelas.
             </p>
         </div>
 
@@ -36,8 +36,11 @@
 
     <div class="table-shell">
         <div class="card-header">
-            <h3 class="section-title">Log Absensi Mesin</h3>
-            <div class="flex items-center gap-2">
+            <div>
+                <h3 class="section-title">Rekap Absensi</h3>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2">
                 @if ($kelasFilter !== '')
                     <span class="badge badge-brand">
                         {{ $kelasList->firstWhere('id', $kelasFilter)?->nama_kelas ?? 'Kelas' }}
@@ -48,7 +51,33 @@
                         {{ $roleFilter === 'siswa' ? 'Siswa' : 'Guru/Tendik' }}
                     </span>
                 @endif
-                <span class="badge badge-neutral">{{ $attendances->total() }} catatan</span>
+                <span class="badge badge-success">
+                    <span class="h-1.5 w-1.5 rounded-full bg-sukses-600"></span>
+                    {{ $hadir }} hadir
+                </span>
+                <span class="badge badge-warning">{{ $terlambat }} terlambat</span>
+                <span class="badge badge-danger">{{ $alpha }} alpha</span>
+                <span class="badge badge-neutral">{{ $attendances->total() }} data</span>
+
+                <span class="mx-1 hidden h-6 w-px bg-slate-200 sm:block"></span>
+
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <a class="btn btn-sm btn-secondary"
+                       href="{{ route('admin.absensi.download', array_filter(['periode' => 'harian', 'tanggal' => $dateFilter, 'kelas_id' => $kelasFilter, 'peran' => $roleFilter])) }}">
+                        <x-icon name="download" class="h-3.5 w-3.5" />
+                        Harian
+                    </a>
+                    <a class="btn btn-sm btn-secondary"
+                       href="{{ route('admin.absensi.download', array_filter(['periode' => 'mingguan', 'tanggal' => $dateFilter, 'kelas_id' => $kelasFilter, 'peran' => $roleFilter])) }}">
+                        <x-icon name="download" class="h-3.5 w-3.5" />
+                        Mingguan
+                    </a>
+                    <a class="btn btn-sm btn-secondary"
+                       href="{{ route('admin.absensi.download', array_filter(['periode' => 'bulanan', 'tanggal' => $dateFilter, 'kelas_id' => $kelasFilter, 'peran' => $roleFilter])) }}">
+                        <x-icon name="download" class="h-3.5 w-3.5" />
+                        Bulanan
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -56,50 +85,59 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Waktu Tap</th>
-                        <th>Device SN</th>
-                        <th>ZKTeco ID</th>
-                        <th>Teridentifikasi Sebagai</th>
-                        <th>Kelas</th>
+                        <th class="w-14">No</th>
+                        <th>Nama</th>
+                        <th>NIS/NIK/NIP</th>
+                        <th>ID Mesin</th>
+                        <th>Jam Masuk</th>
+                        <th>Jam Pulang</th>
+                        <th>Jumlah Masuk</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($attendances as $log)
-                        @php
-                            $identitas = 'Tidak Dikenal (Unregistered)';
-                            $badge = 'badge-neutral';
-                            $kelas = null;
+                    @php
+                        $kelompokTerakhir = null;
+                        $nomor = $attendances->firstItem() ?? 0;
+                    @endphp
 
-                            if (isset($siswas[$log->employee_id])) {
-                                $identitas = $siswas[$log->employee_id]->nama . ' (Siswa)';
-                                $badge = 'badge-brand';
-                                $kelas = $siswas[$log->employee_id]->kelas?->nama_kelas;
-                            } elseif (isset($gurus[$log->employee_id])) {
-                                $identitas = $gurus[$log->employee_id]->nama . ' (Guru/Tendik)';
-                                $badge = 'badge-success';
-                            }
-                        @endphp
-                        <tr wire:key="absensi-{{ $log->id }}">
-                            <td class="whitespace-nowrap num text-xs">
-                                {{ \Carbon\Carbon::parse($log->timestamp)->format('H:i:s') }}
-                            </td>
-                            <td class="num text-xs">{{ $log->sn }}</td>
-                            <td class="num text-xs font-medium text-maroon-200">{{ $log->employee_id }}</td>
+                    @forelse ($attendances as $baris)
+                        @if ($baris['kelompok'] !== $kelompokTerakhir)
+                            @php $kelompokTerakhir = $baris['kelompok']; @endphp
+                            <tr class="group-row" wire:key="kelompok-{{ \Illuminate\Support\Str::slug($baris['kelompok']) }}">
+                                <td colspan="8">
+                                    <span class="text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                        {{ $baris['kelompok'] }}
+                                    </span>
+                                </td>
+                            </tr>
+                        @endif
+
+                        @php $nomor++; @endphp
+                        <tr wire:key="absensi-{{ $baris['employee_id'] }}">
+                            <td class="num text-xs text-slate-400">{{ $nomor }}</td>
+                            <td class="text-xs font-medium text-slate-800">{{ $baris['nama'] }}</td>
+                            <td class="num text-xs text-slate-500">{{ $baris['nis'] }}</td>
+                            <td class="num text-xs text-slate-500">{{ $baris['employee_id'] }}</td>
+                            <td class="num text-xs font-medium text-slate-700">{{ $baris['masuk'] ?? '—' }}</td>
+                            <td class="num text-xs font-medium text-slate-700">{{ $baris['pulang'] ?? '—' }}</td>
+                            <td class="num text-xs text-slate-500">{{ $baris['jumlahTap'] }}</td>
                             <td>
-                                <span class="badge {{ $badge }}">{{ $identitas }}</span>
-                            </td>
-                            <td class="text-xs text-maroon-100">{{ $kelas ?? '-' }}</td>
-                            <td>
-                                <span class="badge badge-success">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-sukses-600"></span>
-                                    Hadir
-                                </span>
+                                @if ($baris['status'] === 'Hadir')
+                                    <span class="badge badge-success">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-sukses-600"></span>
+                                        Hadir
+                                    </span>
+                                @elseif ($baris['status'] === 'Terlambat')
+                                    <span class="badge badge-warning">Terlambat</span>
+                                @else
+                                    <span class="badge badge-danger">Alpha</span>
+                                @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-10 text-center text-sm text-maroon-200">
+                            <td colspan="8" class="py-10 text-center text-sm text-slate-500">
                                 Belum ada data absensi
                                 @if ($kelasFilter !== '' || $roleFilter !== '')
                                     pada filter yang dipilih
@@ -123,7 +161,7 @@
 
     @if ($attendances->hasPages())
         <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p class="text-xs text-maroon-200">Menampilkan <span class="num font-medium text-maroon-100">{{ $attendances->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-maroon-100">{{ $attendances->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-maroon-100">{{ $attendances->total() }}</span> log absensi</p>
+            <p class="text-xs text-slate-500">Menampilkan <span class="num font-medium text-slate-700">{{ $attendances->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-slate-700">{{ $attendances->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-slate-700">{{ $attendances->total() }}</span> data absensi harian</p>
             <div>{{ $attendances->links() }}</div>
         </div>
     @endif

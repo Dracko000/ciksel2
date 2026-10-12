@@ -2,12 +2,12 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\Kelas;
+use App\Support\Absensi\AbsensiRekap;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\DB;
-use App\Models\Siswa;
-use App\Models\Guru;
-use App\Models\Kelas;
 
 class AbsensiMonitor extends Component
 {
@@ -24,6 +24,9 @@ class AbsensiMonitor extends Component
      * Filter peran yang teridentifikasi dari tap. String kosong = semua.
      */
     public $roleFilter = '';
+
+    /** Jumlah baris rekap per halaman. */
+    public const PER_PAGE = 20;
 
     public function mount()
     {
@@ -62,57 +65,43 @@ class AbsensiMonitor extends Component
         $this->resetPage();
     }
 
+    /**
+     * Rekap harian: satu baris per orang (bukan satu baris per tap), jadi
+     * 192 tap mentah pada satu hari terbaca menjadi daftar nama dengan jam
+     * masuk/pulang yang sudah diagregasi. Siswa tampil dikelompokkan per
+     * kelas, lalu guru/tendik, lalu tap yang tidak dikenal.
+     */
     public function render()
     {
-        // Absensi di-linking ke siswa lewat wajah_id_zkteco (ZKTeco ID),
-        // bukan lewat user_id, jadi filter kelas harus diterjemahkan ke
-        // daftar ZKTeco ID milik siswa di kelas tersebut.
-        $employeeIdsKelas = null;
+        $rekap = new AbsensiRekap;
 
-        if ($this->kelasFilter !== '' && $this->kelasFilter !== null) {
-            $employeeIdsKelas = Siswa::where('kelas_id', $this->kelasFilter)
-                ->whereNotNull('wajah_id_zkteco')
-                ->pluck('wajah_id_zkteco')
-                ->all();
-        }
+        $taps = $rekap->tapHari($this->dateFilter);
+        $groups = $rekap->orang(
+            (string) $this->kelasFilter,
+            (string) $this->roleFilter,
+            $taps->keys()->all()
+        );
 
-        // Kolom "Teridentifikasi Sebagai" bisa berisi siswa, guru/tendik,
-        // atau tap dari wajah yang tidak terdaftar. Filter peran memakai
-        // ZKTeco ID masing-masing kelompok; tap tak dikenal ikut tersaring
-        // keluar begitu role tertentu dipilih.
-        $employeeIdsRole = null;
+        $rows = $rekap->baris($groups, $taps);
+        // Terlambat tetap terhitung hadir; hanya Alpha yang tidak hadir.
+        $hadir = collect($rows)->whereIn('status', ['Hadir', 'Terlambat'])->count();
+        $terlambat = collect($rows)->where('status', 'Terlambat')->count();
 
-        if ($this->roleFilter === 'siswa') {
-            $employeeIdsRole = Siswa::whereNotNull('wajah_id_zkteco')
-                ->pluck('wajah_id_zkteco')
-                ->all();
-        } elseif ($this->roleFilter === 'guru') {
-            $employeeIdsRole = Guru::whereNotNull('wajah_id_zkteco')
-                ->pluck('wajah_id_zkteco')
-                ->all();
-        }
+        $page = max(1, (int) $this->getPage('page'));
 
-        $attendances = DB::table('attendances')
-            ->whereDate('timestamp', $this->dateFilter)
-            ->when(
-                $employeeIdsKelas !== null,
-                fn ($query) => $query->whereIn('employee_id', $employeeIdsKelas)
-            )
-            ->when(
-                $employeeIdsRole !== null,
-                fn ($query) => $query->whereIn('employee_id', $employeeIdsRole)
-            )
-            ->orderBy('timestamp', 'DESC')
-            ->paginate(20);
-
-        // Map employee_id ke Siswa/Guru Name
-        $employeeIds = $attendances->pluck('employee_id')->unique()->toArray();
-
-        $siswas = Siswa::with('kelas')
-            ->whereIn('wajah_id_zkteco', $employeeIds)
-            ->get()
-            ->keyBy('wajah_id_zkteco');
-        $gurus = Guru::whereIn('wajah_id_zkteco', $employeeIds)->get()->keyBy('wajah_id_zkteco');
+        // Paginasi dilakukan di memori karena sumbernya sudah berupa baris
+        // rekap (puluhan), bukan query log. Pengaturan halaman tetap memakai
+        // WithPagination supaya wire:click gotoPage dari view tetap bekerja.
+        $attendances = new LengthAwarePaginator(
+            collect($rows)->forPage($page, self::PER_PAGE),
+            count($rows),
+            self::PER_PAGE,
+            $page,
+            [
+                'path' => Paginator::resolveCurrentPath(),
+                'pageName' => 'page',
+            ]
+        );
 
         // Hanya kelas yang siswanya sudah terdaftar di mesin absensi, supaya
         // pilihan filter tidak menghasilkan tabel kosong tanpa alasan.
@@ -122,8 +111,10 @@ class AbsensiMonitor extends Component
 
         return view('livewire.admin.absensi-monitor', [
             'attendances' => $attendances,
-            'siswas' => $siswas,
-            'gurus' => $gurus,
+            'rekap' => $rows,
+            'hadir' => $hadir,
+            'terlambat' => $terlambat,
+            'alpha' => count($rows) - $hadir,
             'kelasList' => $kelasList,
         ])->layout('components.layouts.app');
     }

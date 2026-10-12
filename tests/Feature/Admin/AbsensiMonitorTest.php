@@ -83,6 +83,7 @@ class AbsensiMonitorTest extends TestCase
             'stamp' => $tanggal.' 07:00:00',
             'employee_id' => $employeeId,
             'timestamp' => $tanggal.' 07:00:00',
+            'jenis' => 'masuk',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

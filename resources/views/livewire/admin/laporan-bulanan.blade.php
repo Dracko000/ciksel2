@@ -73,7 +73,7 @@
                         @endphp
                         <tr wire:key="laporan-{{ $data['nis'] }}">
                             <td class="num text-xs">{{ $data['nis'] }}</td>
-                            <td class="font-medium text-maroon-50">{{ $data['nama'] }}</td>
+                            <td class="font-medium text-slate-900">{{ $data['nama'] }}</td>
                             <td>{{ $data['kelas'] }}</td>
                             <td>
                                 <span class="badge {{ $data['hadir'] > 0 ? 'badge-success' : 'badge-danger' }}">
@@ -82,7 +82,7 @@
                             </td>
                             <td>
                                 <div class="flex items-center gap-3">
-                                    <div class="h-2 w-24 overflow-hidden rounded-full bg-maroon-800">
+                                    <div class="h-2 w-24 overflow-hidden rounded-full bg-slate-200">
                                         <div class="h-2 rounded-full {{ $warnaBar }}"
                                              style="width: {{ min($pct, 100) }}%"></div>
                                     </div>
@@ -92,7 +92,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="py-10 text-center text-sm text-maroon-200">
+                            <td colspan="5" class="py-10 text-center text-sm text-slate-500">
                                 Belum ada data presensi pada periode ini.
                             </td>
                         </tr>

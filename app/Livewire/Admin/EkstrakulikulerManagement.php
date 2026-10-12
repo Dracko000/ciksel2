@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\Ekstrakulikuler;
 use App\Models\Guru;
 use App\Models\Siswa;
+use App\Support\TahunAjaran;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -26,7 +27,10 @@ class EkstrakulikulerManagement extends Component
     public $jamMulai = '';
     public $jamSelesai = '';
     public $lokasi = '';
-    public $tahunAjaran = '';
+
+    /** Tahun ajaran default form tambah: tahun ajaran berjalan. */
+    public $tahunAjaran = TahunAjaran::DEFAULT;
+
     public $semester = '';
     public $aktif = true;
 
@@ -277,6 +281,7 @@ class EkstrakulikulerManagement extends Component
 
             'siswaList' => $this->renderSiswaList(),
             'peserta' => $this->renderPeserta(),
+            'tahunAjaranOptions' => TahunAjaran::daftar(TahunAjaran::DEFAULT),
         ])->layout('components.layouts.app');
     }
 

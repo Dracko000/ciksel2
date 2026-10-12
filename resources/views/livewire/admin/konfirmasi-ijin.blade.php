@@ -49,15 +49,15 @@
                 <tbody>
                     @forelse ($pengajuan as $item)
                         <tr wire:key="ijin-{{ $item->id }}">
-                            <td class="font-medium text-maroon-50">{{ $item->siswa->nama }}</td>
-                            <td class="text-xs text-maroon-100">{{ $item->siswa->kelas?->nama_kelas ?? '-' }}</td>
+                            <td class="font-medium text-slate-900">{{ $item->siswa->nama }}</td>
+                            <td class="text-xs text-slate-700">{{ $item->siswa->kelas?->nama_kelas ?? '-' }}</td>
                             <td>
                                 <span class="badge {{ $item->jenis === 'sakit' ? 'badge-danger' : 'badge-warning' }}">
                                     {{ ucfirst($item->jenis) }}
                                 </span>
                             </td>
-                            <td class="max-w-xs text-sm text-maroon-100">{{ $item->keterangan }}</td>
-                            <td class="whitespace-nowrap num text-xs text-maroon-100">
+                            <td class="max-w-xs text-sm text-slate-700">{{ $item->keterangan }}</td>
+                            <td class="whitespace-nowrap num text-xs text-slate-700">
                                 {{ \Carbon\Carbon::parse($item->tanggal_mulai)->format('d/m/Y') }}
                                 @if ($item->tanggal_selesai && $item->tanggal_selesai !== $item->tanggal_mulai)
                                     &ndash; {{ \Carbon\Carbon::parse($item->tanggal_selesai)->format('d/m/Y') }}
@@ -91,13 +91,13 @@
                                         </button>
                                     </div>
                                 @else
-                                    <span class="text-xs text-maroon-300">&mdash;</span>
+                                    <span class="text-xs text-slate-400">&mdash;</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-10 text-center text-sm text-maroon-200">
+                            <td colspan="7" class="py-10 text-center text-sm text-slate-500">
                                 @if ($kelasFilter !== '')
                                     Tidak ada pengajuan izin pada kelas
                                     {{ $kelasList->firstWhere('id', $kelasFilter)?->nama_kelas ?? 'terpilih' }}.
@@ -114,7 +114,7 @@
         @if ($pengajuan->hasPages())
             <div class="border-t border-slate-200 px-5 py-4">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <p class="text-xs text-maroon-200">Menampilkan <span class="num font-medium text-maroon-100">{{ $pengajuan->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-maroon-100">{{ $pengajuan->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-maroon-100">{{ $pengajuan->total() }}</span> pengajuan</p>
+                    <p class="text-xs text-slate-500">Menampilkan <span class="num font-medium text-slate-700">{{ $pengajuan->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-slate-700">{{ $pengajuan->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-slate-700">{{ $pengajuan->total() }}</span> pengajuan</p>
                     <div>{{ $pengajuan->links() }}</div>
                 </div>
             </div>

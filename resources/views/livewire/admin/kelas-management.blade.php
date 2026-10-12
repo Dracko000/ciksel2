@@ -125,7 +125,7 @@
                 <tbody>
                     @forelse ($kelasList as $kelas)
                         <tr wire:key="kelas-{{ $kelas->id }}">
-                            <td class="font-medium text-maroon-50">{{ $kelas->nama_kelas }}</td>
+                            <td class="font-medium text-slate-900">{{ $kelas->nama_kelas }}</td>
                             <td>
                                 @if ($kelas->waliKelas)
                                     {{ $kelas->waliKelas->nama }}
@@ -170,7 +170,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="py-10 text-center text-sm text-maroon-200">
+                            <td colspan="4" class="py-10 text-center text-sm text-slate-500">
                                 Belum ada kelas. Tambahkan lewat form di atas.
                             </td>
                         </tr>
@@ -181,7 +181,7 @@
 
         @if ($kelasList->hasPages())
             <div class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                <p class="text-xs text-maroon-200">Menampilkan <span class="num font-medium text-maroon-100">{{ $kelasList->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-maroon-100">{{ $kelasList->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-maroon-100">{{ $kelasList->total() }}</span> kelas</p>
+                <p class="text-xs text-slate-500">Menampilkan <span class="num font-medium text-slate-700">{{ $kelasList->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-slate-700">{{ $kelasList->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-slate-700">{{ $kelasList->total() }}</span> kelas</p>
                 <div>{{ $kelasList->links() }}</div>
             </div>
         @endif
@@ -222,8 +222,8 @@
                     <tbody>
                         @forelse ($roster as $index => $row)
                             <tr wire:key="roster-{{ $row->id }}">
-                                <td class="text-maroon-300">{{ $roster->firstItem() + $index }}</td>
-                                <td class="font-medium text-maroon-50">{{ $row->nama }}</td>
+                                <td class="text-slate-400">{{ $roster->firstItem() + $index }}</td>
+                                <td class="font-medium text-slate-900">{{ $row->nama }}</td>
                                 <td class="num text-xs">{{ $row->nis }}</td>
                                 <td>{{ $row->user?->username ?? '-' }}</td>
                                 <td>
@@ -243,7 +243,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-10 text-center text-sm text-maroon-200">
+                                <td colspan="5" class="py-10 text-center text-sm text-slate-500">
                                     Kelas ini belum punya siswa.
                                 </td>
                             </tr>
@@ -254,7 +254,7 @@
 
             @if ($roster->hasPages())
                 <div class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                    <p class="text-xs text-maroon-200">Menampilkan <span class="num font-medium text-maroon-100">{{ $roster->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-maroon-100">{{ $roster->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-maroon-100">{{ $roster->total() }}</span> siswa</p>
+                    <p class="text-xs text-slate-500">Menampilkan <span class="num font-medium text-slate-700">{{ $roster->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-slate-700">{{ $roster->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-slate-700">{{ $roster->total() }}</span> siswa</p>
                     <div>{{ $roster->links() }}</div>
                 </div>
             @endif

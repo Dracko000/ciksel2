@@ -62,6 +62,7 @@ class RosterExtractor
 
                 if (isset($siswa[$key])) {
                     $duplikat[$key][] = $namaKelas.' / '.$nama;
+
                     continue;
                 }
 
@@ -178,5 +179,122 @@ class RosterExtractor
         }
 
         return $index;
+    }
+
+    /**
+     * Daftar siswa dari file Dapodik "Detail Sekolah - Data Pokok Pendidikan" (.xlsx).
+     *
+     * Kolom yang dipakai: Nama Lengkap, L/P, NISN, Tingkat, dan Rombel. Ekspor
+     * Dapodik sering membekukan NISN/NIK dengan karakter zero-width (mis.
+     * U+200C), sehingga NISN dibersihkan menjadi digit saja. Rombel "1 A"
+     * dinormalkan menjadi "1A" agar cocok dengan nama kelas di database.
+     * Baris tanpa nama atau rombel dilewati (mis. baris rekap di bawah tabel).
+     *
+     * @return array<int, array{nama: string, nisn: string, jk: string, tingkat: string, rombel: string}>
+     */
+    public static function dariDetailSekolah(string $path): array
+    {
+        $rows = SourceFileReader::xlsx($path);
+
+        // Cari baris header supaya pemetaan kolom tidak bergantung urutan.
+        $headerIndex = null;
+        foreach ($rows as $index => $row) {
+            foreach ($row as $value) {
+                if (strcasecmp(self::bersihTeks((string) $value), 'NISN') === 0) {
+                    $headerIndex = $index;
+                    break 2;
+                }
+            }
+        }
+
+        if ($headerIndex === null) {
+            return [];
+        }
+
+        $map = [];
+        foreach ($rows[$headerIndex] as $column => $label) {
+            $map[Str::lower(self::bersihTeks((string) $label))] = $column;
+        }
+
+        $pick = function (array $row, array $keys) use ($map): string {
+            foreach ($keys as $key) {
+                if (isset($map[$key], $row[$map[$key]])) {
+                    return (string) $row[$map[$key]];
+                }
+            }
+
+            return '';
+        };
+
+        $siswa = [];
+
+        foreach (array_slice($rows, $headerIndex + 1) as $row) {
+            $nama = self::bersihTeks($pick($row, ['nama lengkap', 'nama']));
+            $rombel = $pick($row, ['rombel']);
+
+            if ($nama === '' || self::bersihTeks($rombel) === '') {
+                continue;
+            }
+
+            $siswa[] = [
+                'nama' => $nama,
+                'nisn' => self::bersihNisn($pick($row, ['nisn'])),
+                'jk' => self::bersihTeks($pick($row, ['l/p', 'jk', 'jenis kelamin'])),
+                'tingkat' => self::bersihTeks($pick($row, ['tingkat'])),
+                'rombel' => self::kunciRombel($rombel),
+            ];
+        }
+
+        return $siswa;
+    }
+
+    /**
+     * Buang karakter tak terlihat dan rapikan spasi pada teks dari Excel.
+     *
+     * Zero-width space/joiner/non-joiner dan NBSP dibuang/diganti supaya nama
+     * yang tampak sama benar-benar dianggap sama.
+     */
+    public static function bersihTeks(string $teks): string
+    {
+        $tanpaZeroWidth = preg_replace('/[\x{200B}-\x{200D}\x{FEFF}]/u', '', $teks);
+        if ($tanpaZeroWidth === null) {
+            $tanpaZeroWidth = $teks;
+        }
+
+        // NBSP tidak termasuk \s sebelum mode UCP, jadi disebut eksplisit.
+        $rapikan = preg_replace('/[\s\x{00A0}]+/u', ' ', $tanpaZeroWidth);
+        if ($rapikan === null) {
+            $rapikan = $tanpaZeroWidth;
+        }
+
+        return trim($rapikan);
+    }
+
+    /**
+     * Kunci pembanding nama: huruf kecil, spasi dirapikan, zero-width dibuang.
+     */
+    public static function normalisasiNama(string $nama): string
+    {
+        return Str::lower(self::bersihTeks($nama));
+    }
+
+    /**
+     * Kunci pembanding rombel/kelas: tanpa spasi, huruf besar ("1 a" -> "1A").
+     */
+    public static function kunciRombel(string $rombel): string
+    {
+        $hasil = preg_replace('/\s+/', '', strtoupper(self::bersihTeks($rombel)));
+
+        return $hasil ?? '';
+    }
+
+    /**
+     * Ambil digit dari NISN/NIS/NIK (membuang zero-width dan pemisah lain).
+     */
+    public static function bersihNisn(string $nilai): string
+    {
+        $hasil = preg_replace('/\D+/', '', $nilai);
+
+        return $hasil ?? '';
     }
 }

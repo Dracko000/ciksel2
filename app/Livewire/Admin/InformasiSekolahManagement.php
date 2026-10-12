@@ -4,12 +4,13 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use App\Models\InformasiSekolah;
+use App\Models\Kelas;
 use Illuminate\Support\Facades\Auth;
 
 class InformasiSekolahManagement extends Component
 {
     public $informasi;
-    public $judul, $konten, $tanggal_publikasi;
+    public $judul, $konten, $tanggal_publikasi, $tujuan = 'umum', $kelas_id = null;
     public $edit_id;
     public $isEdit = false;
 
@@ -21,13 +22,15 @@ class InformasiSekolahManagement extends Component
 
     public function loadInformasi()
     {
-        $this->informasi = InformasiSekolah::latest()->get();
+        $this->informasi = InformasiSekolah::with('kelas', 'author')->latest()->get();
     }
 
     public function resetFields()
     {
         $this->judul = ''; $this->konten = ''; 
         $this->tanggal_publikasi = date('Y-m-d');
+        $this->tujuan = 'umum';
+        $this->kelas_id = null;
         $this->isEdit = false; $this->edit_id = null;
     }
 
@@ -37,7 +40,13 @@ class InformasiSekolahManagement extends Component
             'judul' => 'required|min:5',
             'konten' => 'required',
             'tanggal_publikasi' => 'required|date',
+            'tujuan' => 'required|in:umum,kelas',
+            'kelas_id' => 'nullable|exists:kelas,id',
         ]);
+
+        if ($this->tujuan === 'umum') {
+            $this->kelas_id = null;
+        }
 
         InformasiSekolah::updateOrCreate(
             ['id' => $this->edit_id],
@@ -45,6 +54,8 @@ class InformasiSekolahManagement extends Component
                 'judul' => $this->judul,
                 'konten' => $this->konten,
                 'tanggal_publikasi' => $this->tanggal_publikasi,
+                'tujuan' => $this->tujuan,
+                'kelas_id' => $this->kelas_id,
                 'author_id' => Auth::id()
             ]
         );
@@ -61,6 +72,8 @@ class InformasiSekolahManagement extends Component
         $this->judul = $info->judul;
         $this->konten = $info->konten;
         $this->tanggal_publikasi = $info->tanggal_publikasi;
+        $this->tujuan = $info->tujuan ?? 'umum';
+        $this->kelas_id = $info->kelas_id;
         $this->isEdit = true;
     }
 
@@ -73,6 +86,9 @@ class InformasiSekolahManagement extends Component
 
     public function render()
     {
-        return view('livewire.admin.informasi-sekolah-management')->layout('components.layouts.app');
+        $kelasList = Kelas::orderBy('nama_kelas')->get();
+        return view('livewire.admin.informasi-sekolah-management', [
+            'kelasList' => $kelasList,
+        ])->layout('components.layouts.app');
     }
 }

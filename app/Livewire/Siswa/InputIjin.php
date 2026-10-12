@@ -5,7 +5,9 @@ namespace App\Livewire\Siswa;
 use App\Models\PengajuanIjin;
 use App\Notifications\IzinDiajukan;
 use App\Support\Notifikasi;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 /**
@@ -17,7 +19,7 @@ use Livewire\WithPagination;
  */
 class InputIjin extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public $jenis = 'sakit';
 
@@ -26,6 +28,8 @@ class InputIjin extends Component
     public $tanggal_mulai;
 
     public $tanggal_selesai;
+
+    public $foto_bukti;
 
     public function mount(): void
     {
@@ -42,6 +46,7 @@ class InputIjin extends Component
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'keterangan' => 'required|string|min:5',
+            'foto_bukti' => 'required|image|max:2048',
         ]);
 
         if (! $siswaId) {
@@ -50,10 +55,15 @@ class InputIjin extends Component
             return;
         }
 
+        $file = $this->foto_bukti;
+        $filename = 'bukti_ijin/' . now()->format('Ymd_His') . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('', $filename, 'public');
+
         $ijin = PengajuanIjin::create([
             'siswa_id' => $siswaId,
             'jenis' => $this->jenis,
             'keterangan' => $this->keterangan,
+            'foto_bukti' => $filename,
             'tanggal_mulai' => $this->tanggal_mulai,
             'tanggal_selesai' => $this->tanggal_selesai,
             'status' => 'pending',
@@ -63,7 +73,7 @@ class InputIjin extends Component
 
         session()->flash('message', 'Pengajuan berhasil dikirim. Menunggu persetujuan sekolah.');
 
-        $this->reset('keterangan');
+        $this->reset(['keterangan', 'foto_bukti']);
         $this->tanggal_mulai = now()->format('Y-m-d');
         $this->tanggal_selesai = now()->format('Y-m-d');
         $this->resetPage();

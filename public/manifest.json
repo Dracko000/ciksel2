@@ -1,0 +1,22 @@
+{
+  "name": "ADMS - Absensi SDN Cikampek Selatan II",
+  "short_name": "ADMS Ciksel",
+  "description": "Sistem Absensi Digital SDN Cikampek Selatan II",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#7c1d24",
+  "theme_color": "#7c1d24",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/artifacts/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/artifacts/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

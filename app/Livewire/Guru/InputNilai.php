@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Siswa;
 use App\Models\Kelas;
 use App\Models\Nilai;
+use App\Support\TahunAjaran;
 use Illuminate\Support\Facades\Auth;
 
 class InputNilai extends Component
@@ -16,13 +17,24 @@ class InputNilai extends Component
     public $nilai_angka;
     public $catatan;
     public $semester = 'Ganjil';
-    public $tahun_ajaran = '2023/2024';
+
+    /**
+     * Tahun ajaran default mengikuti tahun ajaran berjalan (2026/2027),
+     * supaya nilai yang diinput tidak pernah tercatat pada tahun ajaran
+     * lawas hanya karena field ini tidak pernah diubah.
+     */
+    public $tahun_ajaran = TahunAjaran::DEFAULT;
+
+    /** @var array<int, string> Pilihan tahun ajaran di form. */
+    public $tahunAjaranOptions = [];
 
     public $kelasList;
     public $siswaList = [];
 
     public function mount()
     {
+        $this->tahunAjaranOptions = TahunAjaran::daftar($this->tahun_ajaran);
+
         $guruId = Auth::user()->guru->id ?? null;
         $this->kelasList = Kelas::where('wali_kelas_id', $guruId)->get();
         if ($this->kelasList->isNotEmpty()) {

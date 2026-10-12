@@ -61,6 +61,19 @@
                                 @error('keterangan') <span class="help-error">{{ $message }}</span> @enderror
                             </div>
 
+                            <div>
+                                <label for="foto_bukti" class="label">Foto Bukti (wajib)</label>
+                                <input id="foto_bukti" type="file" wire:model="foto_bukti" accept="image/*" capture="environment"
+                                       class="input @error('foto_bukti') input-error @enderror">
+                                <p class="mt-1 text-xs text-slate-500">Ambil foto langsung dari kamera (kamera belakang). Format JPG/JPEG/PNG, maksimal 2MB</p>
+                                @error('foto_bukti') <span class="help-error">{{ $message }}</span> @enderror
+                                @if ($foto_bukti)
+                                    <div class="mt-2">
+                                        <img src="{{ $foto_bukti->temporaryUrl() }}" alt="Preview Bukti" class="h-24 w-auto rounded border border-slate-200">
+                                    </div>
+                                @endif
+                            </div>
+
                             <button type="submit" class="btn btn-primary w-full" wire:loading.attr="disabled">
                                 <x-icon name="mail" class="h-4 w-4" />
                                 Kirim Pengajuan
@@ -84,6 +97,7 @@
                                     <th>Jenis</th>
                                     <th>Tanggal</th>
                                     <th>Keterangan</th>
+                                    <th>Bukti</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
@@ -103,6 +117,13 @@
                                         </td>
                                         <td class="max-w-xs">{{ $item->keterangan }}</td>
                                         <td>
+                                            @if ($item->foto_bukti)
+                                                <a href="{{ $item->foto_bukti_url }}" target="_blank" class="text-brand-600 hover:underline text-xs">Lihat</a>
+                                            @else
+                                                <span class="text-xs text-slate-400">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
                                             <span @class([
                                                 'badge badge-warning' => $item->status === 'pending',
                                                 'badge badge-success' => $item->status === 'disetujui',
@@ -112,7 +133,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="py-10 text-center text-sm text-maroon-200">
+                                        <td colspan="5" class="py-10 text-center text-sm text-slate-500">
                                             Belum ada pengajuan.
                                         </td>
                                     </tr>
@@ -123,7 +144,7 @@
 
                     @if ($riwayat->hasPages())
                         <div class="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                            <p class="text-xs text-maroon-200">Menampilkan <span class="num font-medium text-maroon-100">{{ $riwayat->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-maroon-100">{{ $riwayat->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-maroon-100">{{ $riwayat->total() }}</span> pengajuan</p>
+                            <p class="text-xs text-slate-500">Menampilkan <span class="num font-medium text-slate-700">{{ $riwayat->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-slate-700">{{ $riwayat->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-slate-700">{{ $riwayat->total() }}</span> pengajuan</p>
                             <div>{{ $riwayat->links() }}</div>
                         </div>
                     @endif

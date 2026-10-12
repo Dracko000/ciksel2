@@ -284,8 +284,8 @@
                                     aria-label="Pilih {{ $user->name }}"
                                 >
                             </td>
-                            <td class="num font-medium text-maroon-100">{{ $identitas ?? '-' }}</td>
-                            <td class="font-medium text-maroon-50">{{ $user->name ?? '-' }}</td>
+                            <td class="num font-medium text-slate-700">{{ $identitas ?? '-' }}</td>
+                            <td class="font-medium text-slate-900">{{ $user->name ?? '-' }}</td>
                             <td>{{ $kelas ?? '-' }}</td>
                             <td>
                                 @php
@@ -303,7 +303,7 @@
                                     {{ ucfirst($user->role ?? '') }}
                                 </span>
                             </td>
-                            <td class="num text-xs text-maroon-200">
+                            <td class="num text-xs text-slate-500">
                                 {{ $isSiswa ? ($user->siswa->rfid_kartu ?: '-') : ($isGuru ? ($user->guru->rfid_kartu ?: '-') : '-') }}
                             </td>
                             <td>
@@ -334,7 +334,7 @@
                         <tr>
                             <td colspan="7">
                                 <div class="empty-state">
-                                    <x-icon name="users" class="h-10 w-10 text-maroon-300" />
+                                    <x-icon name="users" class="h-10 w-10 text-slate-400" />
                                     <p class="empty-state-title">Tidak ada akun yang cocok</p>
                                     <p class="empty-state-text">
                                         Ubah kata kunci pencarian, filter role, atau filter kelas,
@@ -356,24 +356,23 @@
         </div>
 
         <div class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <p class="text-xs text-maroon-200">
+            <p class="text-xs text-slate-500">
                 Menampilkan
-                <span class="num font-medium text-maroon-100">{{ $users->firstItem() ?? 0 }}</span>&ndash;<span
-                    class="num font-medium text-maroon-100">{{ $users->lastItem() ?? 0 }}</span>
-                dari <span class="num font-medium text-maroon-100">{{ $users->total() }}</span> akun
+                <span class="num font-medium text-slate-700">{{ $users->firstItem() ?? 0 }}</span>&ndash;<span
+                    class="num font-medium text-slate-700">{{ $users->lastItem() ?? 0 }}</span>
+                dari <span class="num font-medium text-slate-700">{{ $users->total() }}</span> akun
             </p>
             <div>{{ $users->links() }}</div>
         </div>
     </div>
 
-    {{-- Modal konfirmasi hapus: wajib mengetik ulang nama entitas --}}
+    {{-- Modal konfirmasi hapus: cukup klik konfirmasi --}}
     <x-confirm-delete-modal
         :open="$deleteMode !== null"
         :title="$deleteMode === 'bulk' ? 'Hapus akun terpilih?' : 'Hapus akun?'"
         :target-name="$deleteTargetName"
-        :confirm-value="$deleteConfirmText"
-        input-name="deleteConfirmText"
-        error-key="deleteConfirmText"
+        :require-typing="false"
+        confirm-label="Hapus"
         confirm-method="confirmDelete"
         cancel-method="cancelDelete"
         :impact="$deleteMode === 'bulk'

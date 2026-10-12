@@ -6,6 +6,7 @@ use App\Models\Guru;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -15,11 +16,23 @@ class UserManagement extends Component
     use WithPagination;
 
     public $kelasList;
-    public $name, $email, $username, $password, $role = 'siswa';
+
+    public $name;
+
+    public $email;
+
+    public $username;
+
+    public $password;
+
+    public $role = 'siswa';
 
     public $search = '';
+
     public $roleFilter = '';
+
     public $kelasFilter = '';
+
     public $perPage = 50;
 
     /** @var array<int> id user yang dicentang pada tabel. */
@@ -28,14 +41,11 @@ class UserManagement extends Component
     /** Mode konfirmasi hapus: 'single' atau 'bulk'. */
     public $deleteMode = null;
 
-    /** Nama entitas yang harus diketik ulang oleh admin (konfirmasi hapus). */
+    /** Nama entitas yang dihapus, dipakai untuk teks penjelasan di modal. */
     public $deleteTargetName = '';
 
     /** Id user yang menunggu konfirmasi hapus. */
     public $deleteId = null;
-
-    /** Teks yang diketik admin; harus sama persis dengan deleteTargetName. */
-    public $deleteConfirmText = '';
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -44,14 +54,22 @@ class UserManagement extends Component
     ];
 
     // Spesifik Siswa
-    public $nis, $kelas_id;
+    public $nis;
+
+    public $kelas_id;
+
     // Spesifik Guru
-    public $nip, $is_tendik = false;
+    public $nip;
+
+    public $is_tendik = false;
 
     // Spesifik ZKTeco
-    public $rfid_kartu, $wajah_id_zkteco;
+    public $rfid_kartu;
+
+    public $wajah_id_zkteco;
 
     public $isEdit = false;
+
     public $edit_id;
 
     public function mount()
@@ -145,9 +163,8 @@ class UserManagement extends Component
 
     /* ------------------------------------------------------------------
      |  Konfirmasi hapus
-     |  Hapus tidak pernah dieksekusi langsung dari klik tombol. Modal
-     |  memaksa admin mengetik ulang nama entitas (atau HAPUS untuk massal)
-     |  supaya salah pilih pada daftar 790 baris tidak fatal.
+     |  Hapus tidak dieksekusi dari satu klik, tapi cukup lewat popup
+     |  sederhana Hapus/Batal — tidak perlu mengetik ulang nama.
      | ------------------------------------------------------------------ */
 
     public function askDelete($id): void
@@ -156,8 +173,7 @@ class UserManagement extends Component
 
         $this->deleteMode = 'single';
         $this->deleteId = $user->id;
-        $this->deleteTargetName = $user->name ?? ('user-' . $user->id);
-        $this->deleteConfirmText = '';
+        $this->deleteTargetName = $user->name ?? ('user-'.$user->id);
         $this->resetErrorBag();
     }
 
@@ -170,7 +186,6 @@ class UserManagement extends Component
         $this->deleteMode = 'bulk';
         $this->deleteId = null;
         $this->deleteTargetName = 'HAPUS';
-        $this->deleteConfirmText = '';
         $this->resetErrorBag();
     }
 
@@ -179,21 +194,11 @@ class UserManagement extends Component
         $this->deleteMode = null;
         $this->deleteId = null;
         $this->deleteTargetName = '';
-        $this->deleteConfirmText = '';
         $this->resetErrorBag();
     }
 
     public function confirmDelete(): void
     {
-        $typed = trim((string) $this->deleteConfirmText);
-        $expected = trim((string) $this->deleteTargetName);
-
-        if ($typed === '' || strcasecmp($typed, $expected) !== 0) {
-            $this->addError('deleteConfirmText', "Ketik persis \"" . $expected . "\" untuk melanjutkan.");
-
-            return;
-        }
-
         // Admin tidak boleh menghapus akunnya sendiri lewat layar ini.
         $ids = $this->deleteMode === 'bulk'
             ? $this->selected
@@ -204,6 +209,13 @@ class UserManagement extends Component
             fn ($id) => (int) $id !== (int) auth()->id()
         ));
 
+        if ($ids === []) {
+            $this->cancelDelete();
+            session()->flash('message', 'Tidak ada akun yang dihapus.');
+
+            return;
+        }
+
         $deleted = User::whereIn('id', $ids)->delete();
 
         $this->cancelDelete();
@@ -211,7 +223,7 @@ class UserManagement extends Component
 
         session()->flash(
             'message',
-            $deleted . ' akun berhasil dihapus.'
+            $deleted.' akun berhasil dihapus.'
         );
     }
 
@@ -235,25 +247,31 @@ class UserManagement extends Component
                 });
             })
             ->when($this->roleFilter !== '', fn ($query) => $query->where('role', $this->roleFilter))
-            // Kelas hanya dimiliki siswa; guru dan admin tidak punya kelas_id
-            // sehingga otomatis tersaring keluar saat kelas dipilih.
             ->when(
                 $this->kelasFilter !== '',
-                fn ($query) => $query->whereHas(
-                    'siswa',
-                    fn ($s) => $s->where('kelas_id', $this->kelasFilter)
-                )
+                fn ($query) => $query->whereExists(function ($q) {
+                    $q->select(DB::raw(1))
+                        ->from('siswa')
+                        ->whereColumn('siswa.user_id', 'users.id')
+                        ->where('siswa.kelas_id', $this->kelasFilter);
+                })
             )
             ->orderBy('name');
     }
 
     public function resetFields()
     {
-        $this->name = ''; $this->email = ''; $this->username = ''; $this->password = '';
+        $this->name = '';
+        $this->email = '';
+        $this->username = '';
+        $this->password = '';
         $this->role = 'siswa';
-        $this->nis = ''; $this->kelas_id = null;
-        $this->nip = ''; $this->is_tendik = false;
-        $this->rfid_kartu = ''; $this->wajah_id_zkteco = '';
+        $this->nis = '';
+        $this->kelas_id = null;
+        $this->nip = '';
+        $this->is_tendik = false;
+        $this->rfid_kartu = '';
+        $this->wajah_id_zkteco = '';
         $this->isEdit = false;
         $this->edit_id = null;
     }
@@ -262,16 +280,16 @@ class UserManagement extends Component
     {
         $rules = [
             'name' => 'required',
-            'email' => 'required|email|unique:users,email,' . ($this->edit_id ?? 'NULL'),
+            'email' => 'required|email|unique:users,email,'.($this->edit_id ?? 'NULL'),
             'role' => 'required',
         ];
 
         if ($this->role === 'siswa') {
-            $rules['nis'] = 'required|unique:siswa,nis';
+            $rules['nis'] = 'required|unique:siswa,nis'.($this->edit_id ? ','.(optional(Siswa::where('user_id', $this->edit_id)->first())->id ?? 'NULL').',id' : '');
         } elseif ($this->role === 'guru') {
-            $rules['nip'] = 'required|unique:guru,nip';
+            $rules['nip'] = 'required|unique:guru,nip'.($this->edit_id ? ','.(optional(Guru::where('user_id', $this->edit_id)->first())->id ?? 'NULL').',id' : '');
         } else {
-            $rules['username'] = 'required|unique:users,username,' . ($this->edit_id ?? 'NULL');
+            $rules['username'] = 'required|unique:users,username,'.($this->edit_id ?? 'NULL');
         }
 
         $rules['password'] = $this->isEdit ? 'nullable|min:6' : 'nullable|min:6';
@@ -320,7 +338,7 @@ class UserManagement extends Component
         }
 
         session()->flash('message', ($this->isEdit ? 'User Updated.' : 'User Created.')
-            . ' Username: ' . $username . ($this->password ? '' : ' (password = username)'));
+            .' Username: '.$username.($this->password ? '' : ' (password = username)'));
         $this->resetFields();
     }
 

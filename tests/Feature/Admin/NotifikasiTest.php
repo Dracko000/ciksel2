@@ -17,14 +17,31 @@ use App\Notifications\IzinDiajukan;
 use App\Notifications\IzinDiputuskan;
 use App\Notifications\JadwalMendatang;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
 class NotifikasiTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Pengajuan izin menyimpan foto bukti ke disk "public"; dipalsukan
+        // supaya test tidak menulis file sungguhan ke storage aplikasi.
+        Storage::fake('public');
+    }
+
+    /** Foto bukti wajib untuk setiap pengajuan izin. */
+    private function fotoBukti(): UploadedFile
+    {
+        return UploadedFile::fake()->image('bukti.jpg');
+    }
 
     private function makeUser(string $role, string $username): User
     {
@@ -73,6 +90,7 @@ class NotifikasiTest extends TestCase
             ->set('keterangan', 'Demam tinggi sejak kemarin sore.')
             ->set('tanggal_mulai', '2026-10-07')
             ->set('tanggal_selesai', '2026-10-08')
+            ->set('foto_bukti', $this->fotoBukti())
             ->call('submit')
             ->assertHasNoErrors();
 
@@ -93,6 +111,7 @@ class NotifikasiTest extends TestCase
             ->set('keterangan', '')
             ->set('tanggal_mulai', '2026-10-07')
             ->set('tanggal_selesai', '2026-10-08')
+            ->set('foto_bukti', $this->fotoBukti())
             ->call('submit')
             ->assertHasErrors('keterangan');
 
@@ -113,6 +132,7 @@ class NotifikasiTest extends TestCase
             ->set('keterangan', 'Keperluan keluarga di luar kota.')
             ->set('tanggal_mulai', '2026-10-08')
             ->set('tanggal_selesai', '2026-10-07')
+            ->set('foto_bukti', $this->fotoBukti())
             ->call('submit')
             ->assertHasErrors('tanggal_selesai');
 
@@ -133,6 +153,7 @@ class NotifikasiTest extends TestCase
             ->set('keterangan', 'Keterangan yang cukup panjang.')
             ->set('tanggal_mulai', '2026-10-07')
             ->set('tanggal_selesai', '2026-10-08')
+            ->set('foto_bukti', $this->fotoBukti())
             ->call('submit');
 
         $this->assertSame(0, PengajuanIjin::count());

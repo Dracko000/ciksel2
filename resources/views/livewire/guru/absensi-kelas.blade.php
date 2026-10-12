@@ -69,16 +69,16 @@
                         @endphp
                         <tr wire:key="absensi-siswa-{{ $siswa->id }}">
                             <td class="num text-xs">{{ $siswa->nis }}</td>
-                            <td class="font-medium text-maroon-50">{{ $siswa->nama }}</td>
-                            <td class="text-xs text-maroon-100">{{ $siswa->kelas?->nama_kelas ?? '-' }}</td>
-                            <td class="whitespace-nowrap num text-xs text-maroon-200">{{ $waktuHadir }}</td>
+                            <td class="font-medium text-slate-900">{{ $siswa->nama }}</td>
+                            <td class="text-xs text-slate-700">{{ $siswa->kelas?->nama_kelas ?? '-' }}</td>
+                            <td class="whitespace-nowrap num text-xs text-slate-500">{{ $waktuHadir }}</td>
                             <td>
                                 <span class="badge {{ $statusBadge }}">{{ $statusLabel }}</span>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="py-10 text-center text-sm text-maroon-200">
+                            <td colspan="5" class="py-10 text-center text-sm text-slate-500">
                                 Pilih kelas atau data siswa kosong.
                             </td>
                         </tr>

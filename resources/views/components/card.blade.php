@@ -17,12 +17,12 @@
        menyebut tone tidak lagi merah semua. Merah dicadangkan untuk
        "kamu di sini" dan aksi utama. */
     $iconToneClass = match ($iconTone) {
-        'success' => 'bg-sukses-50 text-sukses-700',
-        'warning' => 'bg-peringatan-50 text-peringatan-700',
-        'danger' => 'bg-bahaya-50 text-bahaya-700',
-        'neutral' => 'bg-slate-100 text-slate-500',
-        'brand' => 'bg-brand-50 text-brand-600',
-        default => 'bg-info-50 text-info-700',
+        'success' => 'bg-gradient-to-br from-emerald-600 to-teal-700 text-white',
+        'warning' => 'bg-gradient-to-br from-amber-600 to-orange-700 text-white',
+        'danger' => 'bg-gradient-to-br from-rose-600 to-red-700 text-white',
+        'neutral' => 'bg-gradient-to-br from-slate-500 to-slate-600 text-white',
+        'brand' => 'bg-gradient-to-br from-brand-500 to-rose-600 text-white',
+        default => 'bg-gradient-to-br from-sky-600 to-indigo-700 text-white',
     };
 
     $badgeToneClass = match ($badgeTone) {

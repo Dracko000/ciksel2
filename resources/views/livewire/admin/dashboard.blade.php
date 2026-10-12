@@ -13,7 +13,7 @@
                 Sistem online
             </span>
 
-            <a href="{{ route('admin.laporan') }}" class="btn btn-secondary">
+            <a href="{{ route('admin.laporan') }}" class="btn btn-primary">
                 <x-icon name="report" class="h-4 w-4" />
                 Laporan presensi
             </a>
@@ -21,24 +21,11 @@
     </div>
 
     @php
-        /* Tone per kartu dipilih sesuai apa yang diukur, bukan semuanya
-           merah: total siswa = netral, kehadiran = hijau, izin yang
-           menunggu = amber, mesin = biru. Warna jadi informatif. */
+        // Donut kehadiran: siswa unik yang tap masuk hari ini vs belum/tidak
+        // hadir. Sumbernya PieData['all'] yang juga dipakai grafik per kelas.
+        $kehadiran = $pieData['all'];
+
         $cards = [
-            [
-                'label' => 'Total Siswa',
-                'value' => $stats['total_siswa'],
-                'icon' => 'users',
-                'delta' => 'Siswa aktif terdaftar',
-                'tone' => 'neutral',
-            ],
-            [
-                'label' => 'Hadir Hari Ini',
-                'value' => $stats['absensi_hari_ini'],
-                'icon' => 'check',
-                'delta' => 'Presensi tercatat hari ini',
-                'tone' => 'success',
-            ],
             [
                 'label' => 'Izin Menunggu',
                 'value' => $stats['izin_menunggu'],
@@ -57,15 +44,28 @@
         ];
 
         $statIconTone = [
-            'neutral' => 'bg-slate-100 text-slate-500',
-            'success' => 'bg-sukses-50 text-sukses-700',
-            'warning' => 'bg-peringatan-50 text-peringatan-700',
-            'danger' => 'bg-bahaya-50 text-bahaya-700',
-            'info' => 'bg-info-50 text-info-700',
+            'neutral' => 'bg-gradient-to-br from-slate-500 to-slate-600',
+            'success' => 'bg-gradient-to-br from-emerald-600 to-teal-700',
+            'warning' => 'bg-gradient-to-br from-amber-600 to-orange-700',
+            'danger' => 'bg-gradient-to-br from-rose-600 to-red-700',
+            'info' => 'bg-gradient-to-br from-sky-600 to-indigo-700',
         ];
     @endphp
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {{-- Kehadiran hari ini divisualkan sebagai donut: satu pandangan untuk
+             proporsi hadir vs tidak hadir, menggantikan dua kartu angka. --}}
+        <x-donut-kehadiran
+            :hadir="$kehadiran['hadir']"
+            :terlambat="$kehadiran['terlambat']"
+            :tidak="$kehadiran['tidak']"
+            :total="$kehadiran['total']"
+            title="Kehadiran Hari Ini"
+            subtitle="Siswa hadir berdasarkan tap masuk hari ini."
+            total-label="Total Siswa"
+            satuan="siswa"
+            class="sm:col-span-2 lg:col-span-2" />
+
         @foreach ($cards as $card)
             <div class="stat-card">
                 <span class="stat-icon {{ $statIconTone[$card['tone']] }}">
@@ -86,98 +86,77 @@
         @endforeach
     </div>
 
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div class="space-y-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="section-title">Akses Cepat</h3>
-                </div>
-
-                <div class="card-body space-y-2">
-                    @foreach ([
-                        ['route' => 'admin.users', 'label' => 'Kelola Pengguna', 'icon' => 'users'],
-                        ['route' => 'admin.kelas', 'label' => 'Management Kelas', 'icon' => 'classroom'],
-                        ['route' => 'admin.ekstrakulikuler', 'label' => 'Ekstrakulikuler', 'icon' => 'club'],
-                        ['route' => 'admin.devices', 'label' => 'Manajemen Mesin', 'icon' => 'device'],
-                        ['route' => 'admin.absensi', 'label' => 'Log Absensi', 'icon' => 'clipboard'],
-                        ['route' => 'admin.info', 'label' => 'Informasi Sekolah', 'icon' => 'school'],
-                    ] as $item)
-                        <a href="{{ route($item['route']) }}"
-                           class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-brand-700">
-                            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition group-hover:text-brand-600">
-                                <x-icon :name="$item['icon']" class="h-4 w-4" />
-                            </span>
-                            <span class="truncate">{{ $item['label'] }}</span>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-
-            {{-- Kartu gelap sebagai jangkar, bukan merah solid: merah di sini
-                 jadi blok warna terbesar di dashboard tanpa makna status. --}}
-            <div class="card bg-slate-900 p-5 text-white">
-                <h3 class="text-sm font-semibold">Bantuan Teknis</h3>
-                <p class="mt-1 text-sm text-slate-300">
-                    Sinkronisasi mesin ZKTeco bermasalah atau log absensi tidak masuk?
-                </p>
-                <p class="mt-3 text-xs text-slate-400">
-                    Hubungi administrator sekolah atau IT sekolah dengan menyertakan nomor seri mesin.
-                </p>
-            </div>
+    
+    <div class="card mt-6">
+        <div class="card-header">
+            <h3 class="section-title">Aktivitas Absensi Terkini</h3>
+            <a href="{{ route('admin.absensi') }}" class="text-xs font-medium text-brand-600 transition hover:text-brand-700">
+                Lihat semua
+            </a>
         </div>
-
-        <div class="lg:col-span-2">
-            <div class="card flex h-full flex-col">
-                <div class="card-header">
-                    <h3 class="section-title">Aktivitas Absensi Terkini</h3>
-                    <a href="{{ route('admin.absensi') }}" class="text-xs font-medium text-brand-600 transition hover:text-brand-700">
-                        Lihat semua
-                    </a>
-                </div>
-
-                <div class="table-scroll flex-1">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Waktu</th>
-                                <th>Device SN</th>
-                                <th>ID Pegawai</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($latestLogs as $log)
-                                <tr wire:key="log-{{ $log->id }}">
-                                    <td class="whitespace-nowrap">
-                                        <span class="block font-medium text-maroon-50">
-                                            {{ \Carbon\Carbon::parse($log->timestamp)->format('H:i') }} WIB
-                                        </span>
-                                        <span class="block text-xs text-maroon-300">
-                                            {{ \Carbon\Carbon::parse($log->timestamp)->translatedFormat('d M Y') }}
-                                        </span>
-                                    </td>
-                                    <td class="num text-xs text-maroon-100">{{ $log->sn }}</td>
-                                    <td class="num text-xs font-medium text-maroon-200">{{ $log->employee_id }}</td>
-                                    <td><span class="badge badge-success">Terverifikasi</span></td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4">
-                                        <div class="empty-state">
-                                            <x-icon name="clipboard" class="h-10 w-10 text-maroon-300" />
-                                            <p class="empty-state-title">Belum ada aktivitas absensi</p>
-                                            <p class="empty-state-text">
-                                                Log absensi akan muncul di sini setelah mesin ZKTeco mengirim
-                                                data pada hari ini.
-                                            </p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="table-scroll flex-1">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Waktu</th>
+                        <th>Nama</th>
+                        <th>Kelas</th>
+                        <th>NIS/NIK/NIP</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($latestLogs as $log)
+                        <tr wire:key="log-{{ $log->id }}">
+                            <td class="whitespace-nowrap">
+                                <span class="block font-medium text-slate-900">
+                                    {{ \Carbon\Carbon::parse($log->timestamp)->format('H:i') }} WIB
+                                </span>
+                                <span class="block text-xs text-slate-400">
+                                    {{ \Carbon\Carbon::parse($log->timestamp)->translatedFormat('d M Y') }}
+                                </span>
+                            </td>
+                            @php
+                                $user = null;
+                                $kelasName = '-';
+                                $nid = '-';
+                                $siswa = null;
+                                $guru = null;
+                                if ($log->employee_id) {
+                                    $siswa = App\Models\Siswa::where('wajah_id_zkteco', $log->employee_id)->with('user', 'kelas')->first();
+                                    if ($siswa) {
+                                        $user = $siswa->user;
+                                        $kelasName = $siswa->kelas?->nama_kelas ?? '-';
+                                        $nid = $siswa->nis ?? '-';
+                                    } else {
+                                        $guru = App\Models\Guru::where('wajah_id_zkteco', $log->employee_id)->with('user')->first();
+                                        if ($guru) {
+                                            $user = $guru->user;
+                                            $nid = $guru->nip ?? '-';
+                                        }
+                                    }
+                                }
+                            @endphp
+                            <td class="text-xs text-slate-700">{{ $user?->name ?? ($siswa?->nama ?? $guru?->nama ?? '-') }}</td>
+                            <td class="text-xs text-slate-700">{{ $kelasName }}</td>
+                            <td class="num text-xs font-medium text-slate-500">{{ $nid }}</td>
+                            <td><span class="badge badge-success">Terverifikasi</span></td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <x-icon name="clipboard" class="h-10 w-10 text-slate-400" />
+                                    <p class="empty-state-title">Belum ada aktivitas absensi</p>
+                                    <p class="empty-state-text">
+                                        Log absensi akan muncul di sini setelah mesin ZKTeco mengirim
+                                        data pada hari ini.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
-</div>

@@ -20,6 +20,7 @@ class Attendance extends Model
         'status3',
         'status4',
         'status5',
+        'jenis',
     ];
 
     protected $casts = [
@@ -29,6 +30,7 @@ class Attendance extends Model
         'status3' => 'integer',
         'status4' => 'integer',
         'status5' => 'integer',
+        'jenis' => 'string',
     ];
 
     public function siswa()

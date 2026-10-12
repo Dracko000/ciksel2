@@ -1,19 +1,22 @@
-<div class="flex min-h-screen items-center justify-center p-6">
+<div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 via-white to-sky-100 p-6">
     <div class="grid w-full max-w-5xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl lg:grid-cols-2">
         <div class="relative hidden bg-slate-900 lg:block">
-            <img src="/artifacts/school_background_modern.png" alt=""
-                 class="absolute inset-0 h-full w-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-900/40 to-slate-900/20"></div>
+            {{-- Panel dekoratif: gradien brand -> violet -> sky. Foto latar
+                 lama (school_background_modern.png) dihapus karena berkasnya
+                 tidak tersedia, agar tidak menghasilkan permintaan 404. --}}
+            <div class="absolute inset-0 bg-gradient-to-t from-brand-700/90 via-violet-600/60 to-sky-500/40"></div>
 
             <div class="relative flex h-full flex-col justify-end p-10">
-                <span class="mb-auto inline-flex h-10 w-10 items-center justify-center rounded-lg bg-brand-600 text-white">
-                    <x-icon name="school" class="h-5 w-5" />
+                <span class="mb-auto inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
+                    <img src="/artifacts/logo.png" alt="Logo Sekolah" class="h-10 w-10 object-contain">
                 </span>
+
+                <span class="rainbow-bar mb-5 h-1.5 w-24 rounded-full" aria-hidden="true"></span>
 
                 <h2 class="text-3xl font-semibold leading-tight tracking-tight text-white">
                     Membangun Masa Depan Cemerlang
                 </h2>
-                <p class="mt-3 text-sm leading-relaxed text-slate-300">
+                <p class="mt-3 text-sm leading-relaxed text-white/85">
                     Sistem Informasi Akademik &amp; Absensi Digital Terintegrasi
                     {{ config('app.school_name') }}.
                 </p>
@@ -22,8 +25,8 @@
 
         <div class="flex flex-col justify-center p-8 sm:p-12">
             <div class="mb-8 flex items-center gap-3">
-                <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-600 text-white lg:hidden">
-                    <x-icon name="book" class="h-5 w-5" />
+                <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-white lg:hidden">
+                    <img src="/artifacts/logo.png" alt="Logo Sekolah" class="h-8 w-8 object-contain">
                 </span>
                 <div>
                     <p class="text-lg font-semibold tracking-tight text-slate-900">ADMS</p>

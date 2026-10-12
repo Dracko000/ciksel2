@@ -22,14 +22,16 @@
     --color-brand-900: #7a1d1f;
     --color-brand-950: #450c0e;
 
-    /*_netral aplikasi_ */
-    --color-maroon: var(--color-maroon-900);
-    --color-canvas: var(--color-maroon-900);
+    /*_netral aplikasi_
+       Kanvas putih bersih: seluruh permukaan aplikasi (halaman, sidebar,
+       header, tabel) memakai putih sebagai dasar, warna hanya muncul sebagai
+       aksen. */
+    --color-canvas: #ffffff;
     --color-ink: #0f172a;
 
     /*_warna status_
        Merah DICADANGKAN untuk brand. Warna "bahaya" karena itu memakai
-       maroon tua (#991b1b), bukan merah terang seperti brand (#cc2f2f).
+       merah gelap (#991b1b), bukan merah terang seperti brand (#cc2f2f).
        Kalau keduanya merah terang, tombol "Hapus akun" dan tombol brand
        tidak bisa dibedakan, dan badge "Ditolak" ikut tertukar dengan
        badge brand. Jarak rona ini yang memisahkannya.
@@ -54,20 +56,9 @@
     --color-bahaya-700: #7f1d1d;
     --color-bahaya-800: #681515;
 
-    /* ---------- Maroon ----------
-       Skala terpisah dari brand (merah terang), karena maroon dipakai
-       sebagai WARNA LATAR yang gelap, bukan warna aksen/teks. Brand
-       tetap untuk tombol, badge, dan sidebar aktif. */
-    --color-maroon-50: #f6ebeb;
-    --color-maroon-100: #e4c9c9;
-    --color-maroon-200: #c99a9a;
-    --color-maroon-300: #a86a6a;
-    --color-maroon-400: #8b3f3f;
-    --color-maroon-500: #7a2020;
-    --color-maroon-600: #661919;
-    --color-maroon-700: #521313;
-    --color-maroon-800: #3f0e0e;
-    --color-maroon-900: #2c0a0a;
+    /* ---------- Warna aksen sekunder ----------
+       Biru (info) dipakai untuk kartu, badge, dan gradien ikon supaya tidak
+       semua elemen merah. */
 
     --color-info-50: #eff6ff;
     --color-info-100: #dbeafe;
@@ -118,14 +109,18 @@
 @layer components {
     /* ---------- Permukaan ----------
        Sudut dibatasi maksimal 8px (rounded-lg). Sudut yang lebih bulat
-       membuat tabel 790 baris terasa seperti kartuarketing, bukan alat
-       kerja. */
+       membuat tabel 790 baris terasa seperti kartu marketing, bukan alat
+       kerja. Bayangan tipis memisahkan kartu putih dari kanvas putih tanpa
+       membuat halaman terasa berat. */
     .card {
-        @apply rounded-lg border border-slate-200 bg-white;
+        @apply rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-200/70;
     }
 
+    /* Kepala kartu diberi wash warna brand tipis di sisi kiri sehingga kartu
+       putih punya arah baca, bukan kotak putih datar. */
     .card-header {
-        @apply flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4;
+        @apply flex flex-wrap items-center justify-between gap-3 border-b border-slate-200
+               bg-gradient-to-r from-brand-50/70 to-white px-5 py-4;
     }
 
     .card-body {
@@ -152,14 +147,23 @@
     /* ---------- Kartu statistik ---------- */
 
     .stat-card {
-        @apply flex items-center gap-4 rounded-lg border border-slate-200 bg-white px-5 py-4;
+        @apply flex items-center gap-4 rounded-lg border border-slate-200 bg-white px-5 py-4
+               shadow-sm shadow-slate-200/70 transition duration-150;
     }
 
-    /* Default netral; pemanggil memberi warna lewat kelas tone eksplisit
-       (lihat dashboard). Default merah dulu membuat 4 kartu statistik
-       dashboard sekaligus merah. */
+    .stat-card:hover {
+        @apply -translate-y-0.5 shadow-md shadow-slate-300/70;
+    }
+
+    /* Ikon memakai chip berwarna pekat (gradien) supaya empat kartu statistik
+       terbaca sebagai empat warna berbeda di atas kanvas putih. Putih di atas
+       ujung gelap gradien minimal ~3:1, aman untuk ikon grafis.
+
+       Default biru; pemanggil memberi warna lewat kelas tone eksplisit
+       (lihat dashboard). */
     .stat-icon {
-        @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500;
+        @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white
+               bg-gradient-to-br from-sky-600 to-indigo-600;
     }
 
     .stat-value {
@@ -188,12 +192,23 @@
 
     .btn {
         @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-transparent
-               px-4 text-sm font-medium whitespace-nowrap transition-colors duration-150
+               px-4 text-sm font-medium whitespace-nowrap transition duration-150
                disabled:cursor-not-allowed disabled:opacity-60;
     }
 
+    /* Gradien brand memberi kedalaman pada tombol utama; bayangan berwarna
+       membuat tombol "terangkat" dari kanvas putih. */
     .btn-primary {
-        @apply bg-brand-600 text-white hover:bg-brand-700;
+        @apply bg-gradient-to-r from-brand-600 to-brand-700 text-white
+               shadow-sm shadow-brand-600/30 hover:from-brand-700 hover:to-brand-800
+               hover:shadow-md hover:shadow-brand-600/40;
+    }
+
+    /* Alias lama: beberapa view memanggil btn-brand. */
+    .btn-brand {
+        @apply bg-gradient-to-r from-brand-600 to-brand-700 text-white
+               shadow-sm shadow-brand-600/30 hover:from-brand-700 hover:to-brand-800
+               hover:shadow-md hover:shadow-brand-600/40;
     }
 
     .btn-secondary {
@@ -258,9 +273,8 @@
     /* Warna teks badge memakai versi lebih gelap dari token status supaya
        kontras teks kecil tetap >= 4.5:1 di atas latar badge.
 
-       badge-danger diberi ring karena maroon masih satu keluarga
-       rona dengan merah brand; ring tipis itulah yang memisahkan
-       "Ditolak" dari badge brand tanpa harus menambah ikon. */
+       badge-danger diberi ring tipis yang memisahkan "Ditolak" dari badge
+       brand tanpa harus menambah ikon. */
     .badge-success {
         @apply bg-sukses-50 text-sukses-700;
     }
@@ -282,23 +296,18 @@
     }
 
     /* ---------- Tabel ----------
-       Header 44px, baris 48px: cukup legah untuk dibaca 8 jam sehari
-       tanpa membuat tabel 790 baris terasa jarang. */
+       Header 44px, baris 48px: cukup lega untuk dibaca 8 jam sehari
+       tanpa membuat tabel 790 baris terasa jarang.
+
+       Seluruh isi tabel kini di atas putih: baris putih bergaris slate tipis,
+       zebra halus, dan header gradien brand sebagai satu-satunya blok warna.
+       Teks sel memakai slate (lihat view) supaya tetap terbaca di atas putih. */
     .table-shell {
-        @apply overflow-hidden rounded-lg border border-maroon-900 bg-white;
+        @apply overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-200/70;
     }
 
-    /* Judul section disatukan dengan header tabel maroon supaya tidak
-       terlihat seperti dua blok terpisah yang ditempel. Input pencarian
-       tetap putih di atasnya, jadi tetap terbaca. */
-    .table-shell > .card-header {
-        @apply border-maroon-900 bg-maroon-800;
-    }
-
-    .table-shell > .card-header .section-title {
-        @apply text-white;
-    }
-
+    /* Baris judul + pencarian mewarisi card-header (putih dengan wash brand
+       tipis), jadi tidak perlu lagi dibuat blok gelap tersendiri. */
     .table-scroll {
         @apply overflow-x-auto;
     }
@@ -308,41 +317,58 @@
     }
 
     .table thead {
-        /* Maroon solid + teks terang: header menjadi blok merah tua
-           yang tegas, bukan merah muda. */
-        @apply bg-maroon-800;
+        /* Gradien brand -> rose: header jadi blok warna yang tegas tetapi
+           tetap satu keluarga dengan tombol utama. Kedua ujung lolos kontras
+           4.5:1 untuk teks putih 12px. */
+        @apply bg-gradient-to-r from-brand-600 to-rose-600;
     }
 
     .table th {
-        /* Teks header dibuat terang karena latarnya maroon gelap. */
         @apply h-11 whitespace-nowrap px-4 text-xs font-semibold uppercase tracking-wide text-white;
     }
 
     .table td {
-        @apply h-12 px-4 text-sm text-maroon-100;
+        @apply h-12 px-4 text-sm text-slate-700;
     }
 
-    /* Baris "belum ada data" juga mengikuti warna tabel. */
+    /* Baris zebra halus: membantu mata melacak baris di tabel lebar. */
+    .table tbody tr:nth-child(even) {
+        @apply bg-slate-50/70;
+    }
+
+    /* Baris "belum ada data" diberi latar lebih pekat supaya terpisah dari
+       baris data. */
     .table tbody tr:only-child td[colspan] {
-        @apply bg-maroon-900;
+        @apply bg-slate-100/70;
     }
 
     .table tbody tr {
-        /* Baris data maroon gelap; hover dibuat lebih terang supaya
-           kursor mudah dilacak. */
-        @apply border-t border-maroon-800 bg-maroon-900 transition-colors hover:bg-maroon-800;
+        @apply border-t border-slate-200 bg-white transition-colors hover:bg-brand-50/60;
     }
 
-    /* Baris terseleksi Dibuat lebih pekat dari baris biasa. */
+    /* Baris terseleksi dibuat lebih pekat dari baris biasa. */
     .table tbody tr.row-selected {
-        @apply bg-maroon-700 hover:bg-maroon-600;
+        @apply bg-brand-100/70 hover:bg-brand-100;
+    }
+
+    /* Kepala kelompok pada rekap harian (per kelas): baris tipis berlatar
+       slate yang memisahkan blok satu kelas dari kelas berikutnya tanpa
+       menambah kolom "Kelas" berulang di setiap baris. Didefinisikan setelah
+       aturan zebra supaya latarnya tidak tertimpa warna baris genap. */
+    .table tbody tr.group-row {
+        @apply bg-slate-100/80 hover:bg-slate-100;
+    }
+
+    .table tbody tr.group-row td {
+        @apply h-9 py-0;
     }
 
     /* ---------- Bilah aksi massal ----------
-       Muncul tepat di atas tabel hanya saat ada baris terpilih. */
+       Muncul tepat di atas tabel hanya saat ada baris terpilih. Wash gradien
+       brand -> amber membedakannya dari header tabel di bawahnya. */
     .bulk-bar {
-        /* Warna maroon agar menyatu dengan header tabel di bawahnya. */
-        @apply flex flex-wrap items-center gap-3 border-b border-maroon-900 bg-maroon-700 px-4 py-3 text-maroon-50;
+        @apply flex flex-wrap items-center gap-3 border-b border-brand-200
+               bg-gradient-to-r from-brand-50 to-amber-50 px-4 py-3 text-brand-800;
     }
 
     /* ---------- Empty state ---------- */
@@ -375,26 +401,42 @@
        Sidebar aplikasi berwarna putih dengan border kanan; item aktif
        memakai brand-50 + teks brand-700 + bar merah 3px di sisi kiri. */
     .sidebar-link {
-        /* Teks terang karena sidebar berlatar maroon-900. */
         @apply relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium
-               text-maroon-200 transition-colors hover:bg-maroon-800 hover:text-maroon-50;
+               text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900;
     }
 
     .sidebar-link-active {
-        @apply bg-maroon-700 text-maroon-50;
+        @apply bg-brand-50 text-brand-700;
+    }
+
+    .sidebar-link-active:hover {
+        @apply bg-brand-100 text-brand-800;
     }
 
     .sidebar-link-active::before {
         content: "";
-        /* Penanda aktif dibuat terang agar terlihat di atas maroon gelap. */
-        @apply absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-maroon-200;
+        /* Penanda aktif: bar brand yang menempel di tepi kiri sidebar. */
+        @apply absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand-600;
     }
 
     /* ---------- Utilitas ---------- */
 
+    /* Pelangi aksen: strip warna tipis di atas header & sidebar sebagai
+       sentuhan "berwarna" yang berlalu cepat di mata. */
+    .rainbow-bar {
+        background-image: linear-gradient(
+            90deg,
+            var(--color-brand-600) 0%,
+            #f59e0b 25%,
+            #10b981 50%,
+            #3b82f6 75%,
+            #8b5cf6 100%
+        );
+    }
+
     .sidebar-scroll {
         scrollbar-width: thin;
-        scrollbar-color: #661919 transparent;
+        scrollbar-color: #cbd5e1 transparent;
     }
 
     .sidebar-scroll::-webkit-scrollbar {
@@ -406,7 +448,7 @@
     }
 
     .sidebar-scroll::-webkit-scrollbar-thumb {
-        background-color: #661919;
+        background-color: #cbd5e1;
         border-radius: 9999px;
     }
 }

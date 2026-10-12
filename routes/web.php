@@ -8,12 +8,20 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 |
 | Here is where you can register web routes for your application. These
+use App\\Livewire\\Guru\\AbsensiKelasDetail;
 | routes are loaded by the RouteServiceProvider and all of them will
 | be assigned to the "web" middleware group. Make something great!
 |
 */
 use App\Http\Controllers\iclockController;
 use App\Livewire\Auth\Login;
+use App\Livewire\Guru\AbsensiKelasDetail;
+
+use App\Livewire\Siswa\AbsensiDetail;
+
+// Health check ringan untuk monitoring / uptime probe. Tanpa auth dan tanpa
+// menyentuh database supaya cepat dan tidak menambah beban.
+Route::get('/health', fn () => response('ok', 200))->name('health');
 
 // Auth Routes
 Route::get('/login', Login::class)->name('login');
@@ -58,6 +66,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/kelas', App\Livewire\Admin\KelasManagement::class)->name('admin.kelas');
         Route::get('/admin/ekstrakulikuler', App\Livewire\Admin\EkstrakulikulerManagement::class)->name('admin.ekstrakulikuler');
         Route::get('/admin/absensi', App\Livewire\Admin\AbsensiMonitor::class)->name('admin.absensi');
+        Route::get('/admin/absensi/download', App\Http\Controllers\AbsensiExportController::class)->name('admin.absensi.download');
+        Route::get('/admin/presensi-guru', App\Livewire\Admin\PresensiGuru::class)->name('admin.presensi-guru');
         Route::get('/admin/informasi', App\Livewire\Admin\InformasiSekolahManagement::class)->name('admin.info');
         Route::get('/admin/konfirmasi', App\Livewire\Admin\KonfirmasiIjin::class)->name('admin.konfirmasi');
         Route::get('/admin/devices', App\Livewire\Admin\DeviceManagement::class)->name('admin.devices');
@@ -67,7 +77,7 @@ Route::middleware(['auth'])->group(function () {
     // Guru Routes
     Route::middleware(['role:guru'])->group(function () {
         Route::get('/guru/dashboard', App\Livewire\Guru\Dashboard::class)->name('guru.dashboard');
-        Route::get('/guru/absensi', App\Livewire\Guru\AbsensiKelas::class)->name('guru.absensi');
+        Route::get('/guru/absensi', App\Livewire\Guru\AbsensiKelasDetail::class)->name('guru.absensi');
         Route::get('/guru/nilai', App\Livewire\Guru\InputNilai::class)->name('guru.nilai');
     });
 
@@ -75,5 +85,8 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:siswa'])->group(function () {
         Route::get('/siswa/dashboard', App\Livewire\Siswa\Dashboard::class)->name('siswa.dashboard');
         Route::get('/siswa/izin', App\Livewire\Siswa\InputIjin::class)->name('siswa.izin');
+        Route::get('/siswa/absensi', App\Livewire\Siswa\AbsensiDetail::class)->name('siswa.absensi');
     });
 });
+
+

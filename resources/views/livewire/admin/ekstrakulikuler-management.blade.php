@@ -152,13 +152,16 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="tahunAjaran" class="label">Tahun Ajaran</label>
-                        <input
+                        <select
                             id="tahunAjaran"
-                            type="text"
                             wire:model="tahunAjaran"
-                            placeholder="2026/2027"
                             class="input"
                         >
+                            <option value="">-- Tidak ditentukan --</option>
+                            @foreach ($tahunAjaranOptions as $tahunAjaran)
+                                <option value="{{ $tahunAjaran }}">{{ $tahunAjaran }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div>
                         <label for="semester" class="label">Semester</label>
@@ -232,9 +235,9 @@
                     @forelse ($daftar as $item)
                         <tr wire:key="eks-{{ $item->id }}">
                             <td>
-                                <span class="block font-medium text-maroon-50">{{ $item->nama }}</span>
+                                <span class="block font-medium text-slate-900">{{ $item->nama }}</span>
                                 @if ($item->lokasi)
-                                    <span class="mt-0.5 block text-xs text-maroon-200">{{ $item->lokasi }}</span>
+                                    <span class="mt-0.5 block text-xs text-slate-500">{{ $item->lokasi }}</span>
                                 @endif
                             </td>
                             <td>{{ $item->guru?->nama ?? '-' }}</td>
@@ -242,12 +245,12 @@
                                 @if ($item->hari)
                                     <span class="block">{{ $item->hari }}</span>
                                     @if ($item->jam_mulai)
-                                        <span class="num mt-0.5 block text-xs text-maroon-200">
+                                        <span class="num mt-0.5 block text-xs text-slate-500">
                                             {{ substr((string) $item->jam_mulai, 0, 5) }}@if ($item->jam_selesai)-{{ substr((string) $item->jam_selesai, 0, 5) }}@endif
                                         </span>
                                     @endif
                                 @else
-                                    <span class="text-maroon-300">-</span>
+                                    <span class="text-slate-400">-</span>
                                 @endif
                             </td>
                             <td class="text-center">{{ $item->siswa_count }}</td>
@@ -284,7 +287,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-10 text-center text-sm text-maroon-200">
+                            <td colspan="6" class="py-10 text-center text-sm text-slate-500">
                                 Belum ada ekstrakulikuler.
                             </td>
                         </tr>
@@ -295,7 +298,7 @@
 
         @if ($daftar->hasPages())
             <div class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                <p class="text-xs text-maroon-200">Menampilkan <span class="num font-medium text-maroon-100">{{ $daftar->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-maroon-100">{{ $daftar->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-maroon-100">{{ $daftar->total() }}</span> kegiatan</p>
+                <p class="text-xs text-slate-500">Menampilkan <span class="num font-medium text-slate-700">{{ $daftar->firstItem() ?? 0 }}</span>&ndash;<span class="num font-medium text-slate-700">{{ $daftar->lastItem() ?? 0 }}</span> dari <span class="num font-medium text-slate-700">{{ $daftar->total() }}</span> kegiatan</p>
                 <div>{{ $daftar->links() }}</div>
             </div>
         @endif

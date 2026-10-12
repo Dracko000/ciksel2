@@ -37,6 +37,7 @@ class LaporanBulanan extends Component
 
         foreach ($siswas as $siswa) {
             $hadir = Attendance::where('employee_id', $siswa->wajah_id_zkteco)
+                ->where('jenis', 'masuk')
                 ->whereMonth('timestamp', $this->month)
                 ->whereYear('timestamp', $this->year)
                 ->select(DB::raw('DATE(timestamp) as date'))

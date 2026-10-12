@@ -73,4 +73,37 @@
             @endif
         </div>
     </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="section-title">Pengumuman untuk Kelas Wali</h2>
+            <span class="badge badge-neutral">{{ $pengumuman->count() }} item</span>
+        </div>
+
+        <div class="card-body space-y-3">
+            @forelse ($pengumuman as $item)
+                <article wire:key="pengumuman-{{ $item->id }}" class="rounded-lg border border-slate-200 p-4">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <h4 class="text-sm font-semibold text-slate-800">{{ $item->judul }}</h4>
+                            <p class="mt-0.5 text-xs text-slate-500">
+                                {{ $item->tanggal_publikasi->format('d F Y') }}
+                                <span class="text-slate-300">&middot;</span>
+                                Oleh: {{ $item->author?->name ?? 'Tidak diketahui' }}
+                                <span class="text-slate-300">&middot;</span>
+                                Tujuan: {{ $item->tujuan === 'umum' ? 'Umum' : ($item->kelas?->nama_kelas ? 'Kelas ' . $item->kelas->nama_kelas : 'Kelas') }}
+                            </p>
+                        </div>
+                    </div>
+                    <p class="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-600">
+                        {{ $item->konten }}
+                    </p>
+                </article>
+            @empty
+                <p class="py-8 text-center text-sm text-slate-500">
+                    Belum ada pengumuman untuk kelas wali.
+                </p>
+            @endforelse
+        </div>
+    </div>
 </div>

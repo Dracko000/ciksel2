@@ -191,7 +191,7 @@ class UserManagementTest extends TestCase
             ->assertSet('kelasFilter', '');
     }
 
-    public function test_hapus_satu_akun_wajib_mengetik_nama(): void
+    public function test_hapus_satu_akun_lewat_popup_tanpa_mengetik(): void
     {
         $admin = $this->actingAsAdmin();
         $target = $this->makeSiswa(1);
@@ -201,23 +201,18 @@ class UserManagementTest extends TestCase
             ->assertSet('deleteMode', 'single')
             ->assertSet('deleteTargetName', 'Siswa 1');
 
-        // Teks salah => belum terhapus.
-        $component->set('deleteConfirmText', 'Siswa 999')
+        // Konfirmasi cukup lewat popup Hapus/Batal — tidak ada input ketik.
+        $component
+            ->assertDontSee('untuk melanjutkan')
             ->call('confirmDelete')
-            ->assertHasErrors('deleteConfirmText');
-
-        $this->assertDatabaseHas('users', ['id' => $target->id]);
-
-        // Teks benar => terhapus.
-        $component->set('deleteConfirmText', 'Siswa 1')
-            ->call('confirmDelete')
-            ->assertHasNoErrors();
+            ->assertHasNoErrors()
+            ->assertSet('deleteMode', null);
 
         $this->assertDatabaseMissing('users', ['id' => $target->id]);
         $this->assertDatabaseHas('users', ['id' => $admin->id]);
     }
 
-    public function test_hapus_massal_wajib_mengetik_kata_hapus(): void
+    public function test_hapus_massal_tanpa_mengetik(): void
     {
         $this->actingAsAdmin();
 
@@ -231,15 +226,9 @@ class UserManagementTest extends TestCase
             ->assertSet('deleteMode', 'bulk')
             ->assertSet('deleteTargetName', 'HAPUS');
 
-        // Teks salah => belum ada yang terhapus.
-        $component->set('deleteConfirmText', 'hapus semua')
-            ->call('confirmDelete')
-            ->assertHasErrors('deleteConfirmText');
-
-        $this->assertDatabaseHas('users', ['id' => $a->id]);
-        $this->assertDatabaseHas('users', ['id' => $b->id]);
-
-        $component->set('deleteConfirmText', 'HAPUS')
+        // Tidak perlu mengetik "HAPUS"; tombol Hapus langsung menghapus.
+        $component
+            ->assertDontSee('untuk melanjutkan')
             ->call('confirmDelete')
             ->assertHasNoErrors()
             ->assertSet('selected', []);
@@ -257,7 +246,6 @@ class UserManagementTest extends TestCase
         Livewire::test(UserManagement::class)
             ->set('selected', [$admin->id, $other->id])
             ->call('askBulkDelete')
-            ->set('deleteConfirmText', 'HAPUS')
             ->call('confirmDelete')
             ->assertHasNoErrors();
 

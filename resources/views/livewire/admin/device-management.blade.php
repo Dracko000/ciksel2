@@ -136,20 +136,20 @@
                                 @endphp
                                 <tr wire:key="device-{{ $dev->id }}">
                                     <td>
-                                        <span class="num rounded-lg bg-maroon-800 px-2.5 py-1 text-xs font-semibold text-maroon-100">
+                                        <span class="num rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
                                             {{ $dev->no_sn }}
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="block font-medium text-maroon-50">{{ $dev->nama ?? 'Unit Belum Dinamai' }}</span>
-                                        <span class="mt-0.5 block text-xs text-maroon-200">{{ $dev->lokasi ?? 'Lokasi Belum Diatur' }}</span>
+                                        <span class="block font-medium text-slate-900">{{ $dev->nama ?? 'Unit Belum Dinamai' }}</span>
+                                        <span class="mt-0.5 block text-xs text-slate-500">{{ $dev->lokasi ?? 'Lokasi Belum Diatur' }}</span>
                                     </td>
                                     <td>
                                         <span class="badge {{ $isOnline ? 'badge-success' : 'badge-danger' }}">
                                             <span class="h-1.5 w-1.5 rounded-full {{ $isOnline ? 'bg-sukses-600' : 'bg-bahaya-600' }}"></span>
                                             {{ $isOnline ? 'Online' : 'Offline' }}
                                         </span>
-                                        <span class="mt-1 block text-xs text-maroon-300">
+                                        <span class="mt-1 block text-xs text-slate-400">
                                             Sinyal: {{ $dev->online ? \Carbon\Carbon::parse($dev->online)->diffForHumans() : 'Belum pernah konek' }}
                                         </span>
                                     </td>
@@ -177,7 +177,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="py-10 text-center text-sm text-maroon-200">
+                                    <td colspan="4" class="py-10 text-center text-sm text-slate-500">
                                         Belum ada mesin ZKTeco yang terhubung.
                                     </td>
                                 </tr>

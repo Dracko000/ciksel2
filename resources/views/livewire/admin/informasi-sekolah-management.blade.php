@@ -43,6 +43,26 @@
                     @error('konten') <span class="help-error">{{ $message }}</span> @enderror
                 </div>
 
+                <div>
+                    <label class="label">Ditujukan Untuk</label>
+                    <select wire:model="tujuan" class="input @error('tujuan') input-error @enderror">
+                        <option value="umum">Umum (Semua Pengguna)</option>
+                        <option value="kelas">Khusus Kelas Tertentu</option>
+                    </select>
+                    @error('tujuan') <span class="help-error">{{ $message }}</span> @enderror
+                </div>
+                @if ($tujuan === 'kelas')
+                    <div>
+                        <label class="label">Pilih Kelas</label>
+                        <select wire:model="kelas_id" class="input @error('kelas_id') input-error @enderror">
+                            <option value="">-- Pilih Kelas --</option>
+                            @foreach ($kelasList as $kls)
+                                <option value="{{ $kls->id }}">{{ $kls->nama_kelas }}</option>
+                            @endforeach
+                        </select>
+                        @error('kelas_id') <span class="help-error">{{ $message }}</span> @enderror
+                    </div>
+                @endif
                 <div class="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-4">
                     <button type="button" wire:click="resetFields" class="btn btn-secondary">
                         Batal
@@ -69,9 +89,11 @@
                         <div class="min-w-0">
                             <h4 class="text-sm font-semibold text-slate-800">{{ $item->judul }}</h4>
                             <p class="mt-0.5 text-xs text-slate-500">
-                                {{ \Carbon\Carbon::parse($item->tanggal_publikasi)->format('d F Y') }}
+                                {{ $item->tanggal_publikasi->format('d F Y') }}
                                 <span class="text-slate-300">&middot;</span>
                                 Oleh: {{ $item->author?->name ?? 'Tidak diketahui' }}
+                                <span class="text-slate-300">&middot;</span>
+                                Tujuan: {{ $item->tujuan === 'umum' ? 'Umum' : ($item->kelas?->nama_kelas ? 'Kelas ' . $item->kelas->nama_kelas : 'Kelas') }}
                             </p>
                         </div>
 

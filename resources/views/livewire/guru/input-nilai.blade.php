@@ -62,6 +62,16 @@
                             </div>
                         </div>
 
+                        <div>
+                            <label for="tahun_ajaran" class="label">Tahun Ajaran</label>
+                            <select id="tahun_ajaran" wire:model.live="tahun_ajaran" class="input">
+                                @foreach ($tahunAjaranOptions as $tahunAjaran)
+                                    <option value="{{ $tahunAjaran }}">{{ $tahunAjaran }}</option>
+                                @endforeach
+                            </select>
+                            @error('tahun_ajaran') <span class="help-error">{{ $message }}</span> @enderror
+                        </div>
+
                         <button type="submit" class="btn btn-primary w-full">
                             <x-icon name="check" class="h-4 w-4" />
                             Simpan Nilai
@@ -105,9 +115,9 @@
                                     }
                                 @endphp
                                 <tr wire:key="nilai-{{ $n->id }}">
-                                    <td class="font-medium text-maroon-50">{{ $n->mata_pelajaran }}</td>
+                                    <td class="font-medium text-slate-900">{{ $n->mata_pelajaran }}</td>
                                     <td>
-                                        <span class="text-base font-semibold tabular-nums text-maroon-50">
+                                        <span class="text-base font-semibold tabular-nums text-slate-900">
                                             {{ $n->nilai_angka }}
                                         </span>
                                     </td>
@@ -117,7 +127,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="py-10 text-center text-sm text-maroon-200">
+                                    <td colspan="3" class="py-10 text-center text-sm text-slate-500">
                                         Belum ada nilai untuk siswa ini.
                                     </td>
                                 </tr>
