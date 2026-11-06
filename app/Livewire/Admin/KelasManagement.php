@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\Guru;
 use App\Models\Kelas;
 use App\Models\Siswa;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -14,19 +15,21 @@ class KelasManagement extends Component
     use WithPagination;
 
     public $search = '';
-    public $waliSearch = '';
 
     public $kelasId;
+
     public $namaKelas = '';
+
     public $waliKelasId;
 
     public $isEdit = false;
+
     public $showRosterFor;
+
     public $rosterSearch = '';
 
     protected $queryString = [
         'search' => ['except' => ''],
-        'waliSearch' => ['except' => ''],
         'rosterSearch' => ['except' => ''],
     ];
 
@@ -36,11 +39,6 @@ class KelasManagement extends Component
     ];
 
     public function updatingSearch(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatingWaliSearch(): void
     {
         $this->resetPage();
     }
@@ -143,7 +141,7 @@ class KelasManagement extends Component
         $expected = trim((string) $this->hapusKelasNama);
 
         if ($typed === '' || strcasecmp($typed, $expected) !== 0) {
-            $this->addError('hapusKelasKonfirmasi', 'Ketik persis "' . $expected . '" untuk melanjutkan.');
+            $this->addError('hapusKelasKonfirmasi', 'Ketik persis "'.$expected.'" untuk melanjutkan.');
 
             return;
         }
@@ -209,10 +207,6 @@ class KelasManagement extends Component
                 ->paginate(30),
 
             'waliList' => Guru::orderBy('nama')
-                ->when(trim((string) $this->waliSearch) !== '', function ($q) {
-                    $waliLike = '%'.addcslashes(trim((string) $this->waliSearch), '%_\\').'%';
-                    $q->where('nama', 'like', $waliLike);
-                })
                 ->limit(200)
                 ->get(),
 
@@ -225,7 +219,7 @@ class KelasManagement extends Component
     /**
      * Daftar siswa pada kelas yang sedang dibuka, dipaginasi terpisah dari daftar kelas.
      */
-    private function renderRoster(): ?\Illuminate\Contracts\Pagination\LengthAwarePaginator
+    private function renderRoster(): ?LengthAwarePaginator
     {
         if ($this->showRosterFor === null) {
             return null;

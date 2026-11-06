@@ -2,6 +2,7 @@
 
 namespace App\Support\Absensi;
 
+use App\Models\Device;
 use App\Models\Guru;
 use App\Models\Siswa;
 use Illuminate\Support\Carbon;
@@ -35,7 +36,7 @@ class AbsensiRekap
      * @param  array<int, string|int>  $tapIds  employee_id yang punya tap pada
      *                                          periode; dipakai untuk menemukan
      *                                          tap tak dikenal.
-     * @return array<int, array{label: string, items: array<int, array{employee_id: string, nama: string, nis: string, kelas: string|null, tipe: string}>}>
+     * @return array<int, array{label: string, items: array<int, array{employee_id: string, nama: string, nis: string, kelas: string|null, kelas_wali: string|null, jam_masuk: string|null, jam_pulang: string|null, tipe: string}>}>
      */
     public function orang(string $kelasFilter = '', string $roleFilter = '', array $tapIds = []): array
     {
@@ -78,6 +79,8 @@ class AbsensiRekap
                             'nis' => (string) ($siswa->nis ?? '-'),
                             'kelas' => $siswa->kelas?->nama_kelas,
                             'kelas_wali' => null,
+                            'jam_masuk' => null,
+                            'jam_pulang' => null,
                             'tipe' => 'siswa',
                         ])
                         ->values()
@@ -104,6 +107,8 @@ class AbsensiRekap
                         'nis' => (string) ($guru->nip ?? '-'),
                         'kelas' => null,
                         'kelas_wali' => $guru->kelasWali->first()?->nama_kelas,
+                        'jam_masuk' => $guru->jam_masuk,
+                        'jam_pulang' => $guru->jam_pulang,
                         'tipe' => 'guru',
                     ])->values()->all(),
                 ];
@@ -126,6 +131,8 @@ class AbsensiRekap
                         'nis' => $id,
                         'kelas' => null,
                         'kelas_wali' => null,
+                        'jam_masuk' => null,
+                        'jam_pulang' => null,
                         'tipe' => 'lain',
                     ], $asing),
                 ];
@@ -136,23 +143,94 @@ class AbsensiRekap
     }
 
     /**
+     * Tap pada satu tanggal yang tidak cocok dengan siswa maupun guru mana pun.
+     *
+     * RFID/ID mesin ditampilkan apa adanya supaya admin bisa mencocokkannya
+     * dengan data di menu Data Pengguna. Halaman Presensi Guru dan Presensi
+     * Murid sama-sama memakainya karena tap asing belum bisa dipastikan
+     * perannya (guru atau siswa).
+     *
+     * @param  Collection<int|string, object{masuk: string|null, pulang: string|null, tap: int, sn: string|null}>  $taps
+     * @return array<int, array{employee_id: string, mesin: array<int, string>, masuk: string|null, pulang: string|null, jumlahTap: int}>
+     */
+    public function belumTerdaftar(Collection $taps): array
+    {
+        $dikenal = $this->semuaIdDikenal();
+        $namaMesin = Device::pluck('nama', 'no_sn');
+        $hasil = [];
+
+        foreach ($taps as $id => $tap) {
+            $employeeId = (string) $id;
+
+            if (isset($dikenal[$employeeId])) {
+                continue;
+            }
+
+            $sns = array_filter(array_map('trim', explode(',', (string) ($tap->sn ?? ''))));
+            $mesin = array_values(array_map(
+                fn (string $sn) => (string) ($namaMesin[$sn] ?? $sn),
+                $sns
+            ));
+
+            $hasil[$employeeId] = [
+                'employee_id' => $employeeId,
+                'mesin' => $mesin,
+                'masuk' => $tap->masuk !== null ? $this->jam((string) $tap->masuk) : null,
+                'pulang' => $tap->pulang !== null ? $this->jam((string) $tap->pulang) : null,
+                'jumlahTap' => (int) $tap->tap,
+            ];
+        }
+
+        ksort($hasil);
+
+        return array_values($hasil);
+    }
+
+    /**
+     * Semua employee_id mesin yang sudah terhubung ke siswa/guru, sebagai set.
+     *
+     * Sengaja tidak memakai filter kelas/peran: orang yang terdaftar di kelas
+     * lain tetap "dikenal" dan tidak boleh muncul sebagai belum terdaftar.
+     *
+     * Dipakai juga oleh halaman "RFID Belum Terdaftar" supaya daftar tap asing
+     * di sana dan di halaman Presensi selalu memakai definisi yang sama.
+     *
+     * @return array<string, true>
+     */
+    public function semuaIdDikenal(): array
+    {
+        $dikenal = [];
+
+        $ids = Siswa::whereNotNull('wajah_id_zkteco')
+            ->pluck('wajah_id_zkteco')
+            ->merge(Guru::whereNotNull('wajah_id_zkteco')->pluck('wajah_id_zkteco'));
+
+        foreach ($ids as $id) {
+            $dikenal[(string) $id] = true;
+        }
+
+        return $dikenal;
+    }
+
+    /**
      * Ringkasan tap satu tanggal, diagregasi per orang.
      *
-     * @return Collection<int|string, object{employee_id: int|string, masuk: string, pulang: string, tap: int}>
+     * @return Collection<int|string, object{employee_id: int|string, sn: string|null, masuk: string, pulang: string, tap: int}>
      */
     public function tapHari(string $tanggal): Collection
     {
         // Kehadiran dihitung dari log "masuk" saja supaya satu orang pada satu
         // hari tidak terhitung dua kali karena tap pulang. Jam pulang tetap
         // diambil (log "pulang" terakhir) untuk ditampilkan.
-        $start = $tanggal . ' 00:00:00';
-        $end = $tanggal . ' 23:59:59';
+        $start = $tanggal.' 00:00:00';
+        $end = $tanggal.' 23:59:59';
 
         return DB::table('attendances')
             ->whereBetween('timestamp', [$start, $end])
             ->groupBy('employee_id')
             ->selectRaw(
                 'employee_id, '
+                ."GROUP_CONCAT(DISTINCT sn ORDER BY sn SEPARATOR ',') as sn, "
                 ."MIN(CASE WHEN jenis = 'masuk' THEN timestamp END) as masuk, "
                 ."MAX(CASE WHEN jenis = 'pulang' THEN timestamp END) as pulang, "
                 ."SUM(CASE WHEN jenis = 'masuk' THEN 1 ELSE 0 END) as tap"
@@ -207,16 +285,30 @@ class AbsensiRekap
                 // Hadir hanya jika ada log masuk; log pulang cukup ditampilkan.
                 $adaMasuk = $adaTap && $tap->masuk !== null;
 
-                // Acuan jam masuk: kelas siswa, atau kelas yang diampu wali
-                // kelas. Guru/tendik biasa tidak punya acuan sehingga tidak
-                // pernah dinilai telat.
+                // Acuan jam masuk berurutan: jam pribadi guru (menu "Jam Guru"),
+                // lalu jam kelas (siswa, atau wali kelas mengikuti kelas yang
+                // diampu). Guru/tendik tanpa jam pribadi dan bukan wali kelas
+                // tidak dinilai telat.
                 $kelasAcuan = $orang['kelas'] ?? $orang['kelas_wali'] ?? null;
-                $jamMasuk = JamKelas::jamMasuk($kelasAcuan);
+                $tipe = $orang['tipe'] ?? null;
+                $isGuru = $tipe === 'guru';
+
+                $jamGuruMasuk = $isGuru ? JamGuru::jam($orang['jam_masuk'] ?? null) : null;
+
+                if ($jamGuruMasuk !== null) {
+                    $jamMasuk = $jamGuruMasuk;
+                } elseif ($kelasAcuan !== null) {
+                    $jamMasuk = JamKelas::jamMasuk($kelasAcuan);
+                } else {
+                    $jamMasuk = null;
+                }
 
                 if (! $adaMasuk) {
                     $status = 'Alpha';
-                } elseif (JamKelas::terlambat((string) $tap->masuk, $kelasAcuan)) {
-                    $status = 'Terlambat';
+                } elseif ($jamGuruMasuk !== null) {
+                    $status = JamGuru::terlambat((string) $tap->masuk, $jamGuruMasuk) ? 'Terlambat' : 'Hadir';
+                } elseif ($kelasAcuan !== null) {
+                    $status = JamKelas::terlambat((string) $tap->masuk, $kelasAcuan) ? 'Terlambat' : 'Hadir';
                 } else {
                     $status = 'Hadir';
                 }

@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\Guru;
 use App\Models\Siswa;
 use App\Notifications\AbsenTercatat;
+use App\Support\Absensi\JamGuru;
 use App\Support\Absensi\JamKelas;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Notification;
@@ -56,8 +57,9 @@ class AttendanceObserver
      * Mesin ZKTeco hanya mengirim waktu mentah tanpa penanda. Aturan lama
      * "jam >= 12 berarti pulang" rusak untuk kelas siang (3 & 4) yang justru
      * masuk pukul 12:30: tap masuk mereka tercatat sebagai pulang. Karena itu
-     * pembatasnya kini titik tengah rentang belajar kelas orang tersebut.
-     * Guru/tendik tanpa kelas memakai patokan tengah hari seperti sebelumnya.
+     * pembatasnya kini titik tengah rentang jam orang tersebut: jam kelas untuk
+     * siswa, jam pribadi guru (menu "Jam Guru") lalu jam kelas yang diampu
+     * untuk wali kelas, atau tengah hari bila tidak ada acuan.
      */
     private function tebakJenis(Attendance $attendance): string
     {
@@ -67,7 +69,7 @@ class AttendanceObserver
             return 'masuk';
         }
 
-        $titikTengah = JamKelas::titikTengah($this->kelasOrang($attendance->employee_id));
+        $titikTengah = $this->titikTengahOrang($attendance->employee_id);
 
         if ($titikTengah !== null) {
             return $waktu->format('H:i') < $titikTengah ? 'masuk' : 'pulang';
@@ -92,11 +94,11 @@ class AttendanceObserver
     }
 
     /**
-     * Nama kelas orang yang tap: kelas siswa, atau kelas yang diampu wali
-     * kelas bila yang tap adalah guru. Null bila tidak dapat ditentukan
-     * (guru/tendik biasa).
+     * Titik tengah rentang jam orang yang tap. Untuk siswa memakai jam kelas;
+     * untuk guru memakai jam pribadi bila ada, jika tidak memakai jam kelas
+     * yang diampu (wali kelas). Null bila tidak ada acuan (guru/tendik biasa).
      */
-    private function kelasOrang(?string $employeeId): ?string
+    private function titikTengahOrang(?string $employeeId): ?string
     {
         if ($employeeId === null || $employeeId === '') {
             return null;
@@ -109,7 +111,7 @@ class AttendanceObserver
             ->first();
 
         if ($siswa) {
-            return $siswa->kelas?->nama_kelas;
+            return JamKelas::titikTengah($siswa->kelas?->nama_kelas);
         }
 
         $guru = Guru::with('kelasWali')
@@ -118,6 +120,13 @@ class AttendanceObserver
             ->orWhere('rfid_kartu', $employeeId)
             ->first();
 
-        return $guru?->kelasWali->first()?->nama_kelas;
+        if ($guru === null) {
+            return null;
+        }
+
+        // Jam pribadi guru lebih diutamakan daripada jam kelas yang diampu.
+        $pribadi = JamGuru::titikTengah($guru->jam_masuk, $guru->jam_pulang);
+
+        return $pribadi ?? JamKelas::titikTengah($guru->kelasWali->first()?->nama_kelas);
     }
 }

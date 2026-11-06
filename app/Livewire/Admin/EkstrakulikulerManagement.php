@@ -16,22 +16,30 @@ class EkstrakulikulerManagement extends Component
     use WithPagination;
 
     public $search = '';
-    public $guruSearch = '';
+
     public $siswaSearch = '';
 
     public $ekstrakulikulerId;
+
     public $nama = '';
+
     public $deskripsi = '';
+
     public $guruId;
+
     public $hari = '';
+
     public $jamMulai = '';
+
     public $jamSelesai = '';
+
     public $lokasi = '';
 
     /** Tahun ajaran default form tambah: tahun ajaran berjalan. */
     public $tahunAjaran = TahunAjaran::DEFAULT;
 
     public $semester = '';
+
     public $aktif = true;
 
     public $isEdit = false;
@@ -41,7 +49,6 @@ class EkstrakulikulerManagement extends Component
 
     protected $queryString = [
         'search' => ['except' => ''],
-        'guruSearch' => ['except' => ''],
         'siswaSearch' => ['except' => ''],
     ];
 
@@ -59,11 +66,6 @@ class EkstrakulikulerManagement extends Component
     ];
 
     public function updatingSearch(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatingGuruSearch(): void
     {
         $this->resetPage();
     }
@@ -174,7 +176,7 @@ class EkstrakulikulerManagement extends Component
         $expected = trim((string) $this->hapusEkskulNama);
 
         if ($typed === '' || strcasecmp($typed, $expected) !== 0) {
-            $this->addError('hapusEkskulKonfirmasi', 'Ketik persis "' . $expected . '" untuk melanjutkan.');
+            $this->addError('hapusEkskulKonfirmasi', 'Ketik persis "'.$expected.'" untuk melanjutkan.');
 
             return;
         }
@@ -272,10 +274,6 @@ class EkstrakulikulerManagement extends Component
                 ->paginate(15),
 
             'guruList' => Guru::orderBy('nama')
-                ->when(trim((string) $this->guruSearch) !== '', function ($q) {
-                    $g = '%'.addcslashes(trim((string) $this->guruSearch), '%_\\').'%';
-                    $q->where('nama', 'like', $g);
-                })
                 ->limit(200)
                 ->get(),
 

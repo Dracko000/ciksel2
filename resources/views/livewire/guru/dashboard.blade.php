@@ -1,9 +1,14 @@
 <div class="space-y-6">
-    <div>
-        <h2 class="page-title">Dashboard Guru</h2>
-        <p class="page-subtitle">
-            Selamat datang, {{ auth()->user()->name }}. Berikut ringkasan aktivitas mengajar Anda.
-        </p>
+    <div class="flex items-center gap-4">
+        <img src="/logo-sekolah.png" alt="Logo {{ config('app.school_name') }}"
+             class="h-14 w-14 shrink-0 rounded-xl object-contain">
+
+        <div>
+            <h2 class="page-title">Dashboard Guru</h2>
+            <p class="page-subtitle">
+                Selamat datang, {{ auth()->user()->name }}. Berikut ringkasan aktivitas mengajar Anda.
+            </p>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">

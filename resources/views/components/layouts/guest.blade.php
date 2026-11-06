@@ -6,10 +6,10 @@
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ADMS">
+    <meta name="apple-mobile-web-app-title" content="{{ config('app.school_name') }}">
     <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="/artifacts/logo.png">
-    <title>{{ $title ?? 'Masuk' }} &middot; ADMS</title>
+    <link rel="apple-touch-icon" href="/logo-sekolah.png">
+    <title>{{ $title ?? 'Masuk' }} &middot; {{ config('app.school_name') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">

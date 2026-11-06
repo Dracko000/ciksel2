@@ -57,13 +57,6 @@
 
                 <div>
                     <label for="waliKelasId" class="label">Wali Kelas</label>
-                    <input
-                        id="waliSearch"
-                        type="search"
-                        wire:model.live.debounce.300ms="waliSearch"
-                        placeholder="Cari wali kelas..."
-                        class="input mb-2"
-                    >
                     <select
                         id="waliKelasId"
                         wire:model="waliKelasId"

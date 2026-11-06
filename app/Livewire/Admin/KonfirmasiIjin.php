@@ -28,6 +28,7 @@ class KonfirmasiIjin extends Component
         $this->kelasFilter = '';
         $this->resetPage();
     }
+
     public function approve($id)
     {
         $this->putuskan($id, 'disetujui');
@@ -57,6 +58,9 @@ class KonfirmasiIjin extends Component
         $ijin->update(['status' => $keputusan]);
 
         Notifikasi::kePemilikSiswa($ijin->siswa_id, new IzinDiputuskan($ijin, $keputusan));
+
+        // Segarkan angka pengajuan pending di sidebar tanpa menunggu polling.
+        $this->dispatch('izin-dikonfirmasi');
 
         session()->flash(
             'message',

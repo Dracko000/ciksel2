@@ -1,36 +1,50 @@
-<div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 via-white to-sky-100 p-6">
-    <div class="grid w-full max-w-5xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl lg:grid-cols-2">
-        <div class="relative hidden bg-slate-900 lg:block">
-            {{-- Panel dekoratif: gradien brand -> violet -> sky. Foto latar
-                 lama (school_background_modern.png) dihapus karena berkasnya
-                 tidak tersedia, agar tidak menghasilkan permintaan 404. --}}
-            <div class="absolute inset-0 bg-gradient-to-t from-brand-700/90 via-violet-600/60 to-sky-500/40"></div>
+<div class="flex min-h-screen items-center justify-center bg-canvas p-4 sm:p-6">
+    <div class="grid w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xl shadow-slate-900/[0.07] lg:grid-cols-2">
+        <div class="relative hidden overflow-hidden bg-navy-900 lg:block">
+            {{-- Panel dekoratif: lingkaran cahaya lembut di atas navy, tanpa
+                 foto latar agar tidak ada permintaan berkas yang hilang. --}}
+            <div class="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-600/25 blur-3xl"></div>
+            <div class="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-sky-500/20 blur-3xl"></div>
 
             <div class="relative flex h-full flex-col justify-end p-10">
-                <span class="mb-auto inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
-                    <img src="/artifacts/logo.png" alt="Logo Sekolah" class="h-10 w-10 object-contain">
+                <span class="mb-auto inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white">
+                    <img src="/logo-sekolah.png" alt="Logo {{ config('app.school_name') }}" class="h-10 w-10 object-contain">
                 </span>
 
-                <span class="rainbow-bar mb-5 h-1.5 w-24 rounded-full" aria-hidden="true"></span>
+                <span class="mb-5 h-1 w-16 rounded-full bg-brand-500" aria-hidden="true"></span>
 
                 <h2 class="text-3xl font-semibold leading-tight tracking-tight text-white">
                     Membangun Masa Depan Cemerlang
                 </h2>
-                <p class="mt-3 text-sm leading-relaxed text-white/85">
+                <p class="mt-3 text-sm leading-relaxed text-slate-400">
                     Sistem Informasi Akademik &amp; Absensi Digital Terintegrasi
                     {{ config('app.school_name') }}.
                 </p>
+
+                <div class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-400">
+                    <span class="inline-flex items-center gap-2">
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                        Presensi otomatis
+                    </span>
+                    <span class="inline-flex items-center gap-2">
+                        <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+                        Rekap real-time
+                    </span>
+                    <span class="inline-flex items-center gap-2">
+                        <span class="h-1.5 w-1.5 rounded-full bg-brand-400"></span>
+                        Multi peran
+                    </span>
+                </div>
             </div>
         </div>
 
         <div class="flex flex-col justify-center p-8 sm:p-12">
             <div class="mb-8 flex items-center gap-3">
-                <span class="flex h-10 w-10 items-center justify-center rounded-lg bg-white lg:hidden">
-                    <img src="/artifacts/logo.png" alt="Logo Sekolah" class="h-8 w-8 object-contain">
+                <span class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white lg:hidden">
+                    <img src="/logo-sekolah.png" alt="Logo {{ config('app.school_name') }}" class="h-8 w-8 object-contain">
                 </span>
                 <div>
-                    <p class="text-lg font-semibold tracking-tight text-slate-900">ADMS</p>
-                    <p class="text-xs text-slate-500">{{ config('app.school_name') }}</p>
+                    <p class="text-lg font-semibold tracking-tight text-slate-900">{{ config('app.school_name') }}</p>
                 </div>
             </div>
 
@@ -72,7 +86,7 @@
 
                 <label for="remember" class="flex cursor-pointer items-center gap-2 text-sm text-slate-600">
                     <input id="remember" wire:model="remember" type="checkbox"
-                           class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-600">
+                           class="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
                     Ingat saya
                 </label>
 

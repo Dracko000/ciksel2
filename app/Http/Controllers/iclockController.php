@@ -18,23 +18,23 @@ class iclockController extends Controller
     {
         $sn = $request->input('SN');
 
-        if (!$sn) {
-            return "ERROR: SN REQUIRED";
+        if (! $sn) {
+            return 'ERROR: SN REQUIRED';
         }
 
-        $response = "GET OPTION FROM: {$sn}\r\n" .
-             "Stamp=9999\r\n" .
-             "OpStamp=" . time() . "\r\n" .
-             "ErrorDelay=60\r\n" .
-             "Delay=30\r\n" .
-             "ResLogDay=18250\r\n" .
-             "ResLogDelCount=10000\r\n" .
-             "ResLogCount=50000\r\n" .
-             "TransTimes=00:00;14:05\r\n" .
-             "TransInterval=1\r\n" .
-             "TransFlag=1111000000\r\n" .
-             "Realtime=1\r\n" .
-             "Encrypt=0";
+        $response = "GET OPTION FROM: {$sn}\r\n".
+             "Stamp=9999\r\n".
+             'OpStamp='.time()."\r\n".
+             "ErrorDelay=60\r\n".
+             "Delay=30\r\n".
+             "ResLogDay=18250\r\n".
+             "ResLogDelCount=10000\r\n".
+             "ResLogCount=50000\r\n".
+             "TransTimes=00:00;14:05\r\n".
+             "TransInterval=1\r\n".
+             "TransFlag=1111000000\r\n".
+             "Realtime=1\r\n".
+             'Encrypt=0';
 
         return $response;
     }
@@ -51,8 +51,8 @@ class iclockController extends Controller
 
         $device = $request->attributes->get('iclock_device');
 
-        if (!$device) {
-            return "ERROR: DEVICE NOT REGISTERED";
+        if (! $device) {
+            return 'ERROR: DEVICE NOT REGISTERED';
         }
 
         try {
@@ -60,16 +60,20 @@ class iclockController extends Controller
             $lines = preg_split('/\\r\\n|\\r|\\n/', $content);
             $count = 0;
 
-            if ($table === "OPERLOG") {
-                return "OK: " . count(array_filter($lines));
+            if ($table === 'OPERLOG') {
+                return 'OK: '.count(array_filter($lines));
             }
 
             foreach ($lines as $line) {
-                if (empty(trim($line))) continue;
+                if (empty(trim($line))) {
+                    continue;
+                }
 
                 $data = explode("\t", $line);
-                
-                if (count($data) < 2) continue;
+
+                if (count($data) < 2) {
+                    continue;
+                }
 
                 Attendance::create([
                     'sn' => $sn,
@@ -87,30 +91,31 @@ class iclockController extends Controller
                 $count++;
             }
 
-            return "OK: " . $count;
+            return 'OK: '.$count;
 
         } catch (Throwable $e) {
             // Security Auditor: Log errors for debugging
             DB::table('error_log')->insert([
                 'data' => $e->getMessage(),
-                'created_at' => now()
+                'created_at' => now(),
             ]);
+
             return "ERROR: PROCESSING FAILED\n";
         }
     }
 
     public function test(Request $request)
     {
-        return "ADMS SERVER ACTIVE";
+        return config('app.school_name').' SERVER ACTIVE';
     }
 
     public function getrequest(Request $request)
     {
-        return "OK";
+        return 'OK';
     }
 
     private function parseOptionalInt($value)
     {
-        return (isset($value) && $value !== '') ? (int)$value : null;
+        return (isset($value) && $value !== '') ? (int) $value : null;
     }
 }

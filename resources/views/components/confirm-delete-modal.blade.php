@@ -41,7 +41,7 @@
         x-init="$nextTick(() => { if ($refs.konfirmasi) { $refs.konfirmasi.focus(); } })"
         x-on:keydown.escape.window="{{ $cancelMethod }}()"
     >
-        <div class="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-xl">
+        <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/10">
             <div class="flex items-start gap-3">
                 <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-bahaya-50 text-bahaya-700">
                     <x-icon name="warning" class="h-5 w-5" />

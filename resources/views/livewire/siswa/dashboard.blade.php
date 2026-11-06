@@ -1,7 +1,12 @@
 <div class="space-y-6">
-    <div>
-        <h1 class="page-title">Halo, {{ auth()->user()->name }}</h1>
-        <p class="page-subtitle">Ringkasan kehadiran dan informasi kelas kamu.</p>
+    <div class="flex items-center gap-4">
+        <img src="/logo-sekolah.png" alt="Logo {{ config('app.school_name') }}"
+             class="h-14 w-14 shrink-0 rounded-xl object-contain">
+
+        <div>
+            <h1 class="page-title">Halo, {{ auth()->user()->name }}</h1>
+            <p class="page-subtitle">Ringkasan kehadiran dan informasi kelas kamu.</p>
+        </div>
     </div>
 
     @if ($notifikasiAbsen)

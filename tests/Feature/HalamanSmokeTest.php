@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Siswa;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -23,7 +22,7 @@ class HalamanSmokeTest extends TestCase
         $this->get('/login')
             ->assertOk()
             ->assertSee('Masuk ke akun Anda', escape: false)
-            ->assertSee('ADMS');
+            ->assertSee(config('app.school_name'));
     }
 
     public function test_halaman_admin_semua_dapat_dirender(): void
@@ -35,9 +34,14 @@ class HalamanSmokeTest extends TestCase
             '/admin/kelas',
             '/admin/ekstrakulikuler',
             '/admin/users',
+            '/admin/users/create',
+            '/admin/rfid-belum-terdaftar',
             '/admin/devices',
             '/admin/absensi',
             '/admin/presensi-guru',
+            '/admin/presensi-murid',
+            '/admin/jam-guru',
+            '/admin/jam-kelas',
             '/admin/informasi',
             '/admin/laporan',
             '/admin/konfirmasi',
@@ -112,42 +116,42 @@ class HalamanSmokeTest extends TestCase
         $this->get('/admin/dashboard')->assertRedirect('/login');
     }
 
-    /** Keputusan desain: kanvas putih bersih, warna muncul sebagai aksen
-     *  (gradien, pelangi, chip ikon) — bukan kanvas gelap dan bukan merah
-     *  pekat di mana-mana. Merah penuh tetap hanya untuk aksi utama,
-     *  posisi aktif, dan status. */
-    public function test_latar_halaman_putih_dan_aksen_tetap_bermerek(): void
+    /** Keputusan desain: sidebar navy gelap, kanvas abu muda, dan aksen
+     *  merah sekolah dipakai hemat untuk aksi utama serta menu aktif. */
+    public function test_sidebar_gelap_dan_aksen_tetap_bermerek(): void
     {
         $admin = $this->buatUser('admin');
         $html = $this->actingAs($admin)->get('/admin/dashboard')
             ->assertOk()
             ->getContent();
 
-        // Header tabel tidak boleh jadi blok netral tanpa merek.
-        $this->assertStringNotContainsString('bg-slate-50" ', $html, 'Header tabel tidak boleh netral.');
+        // Sidebar gelap + item aktif bermerek.
+        $this->assertStringContainsString('bg-navy-900', $html, 'Sidebar harus memakai latar navy gelap.');
+        $this->assertStringContainsString('sidebar-link-active', $html, 'Menu aktif harus ditandai.');
+
         $this->assertStringNotContainsString('card bg-brand-600', $html, 'Kartu bantuan teknis tidak boleh merah pekat.');
 
-        foreach (['Kehadiran Hari Ini', 'Hadir', 'Tidak Hadir', 'Total Siswa', 'Izin Menunggu', 'Mesin Online'] as $label) {
+        foreach (['Kehadiran Hari Ini', 'Hadir', 'Tidak Hadir', 'Total Siswa', 'Kehadiran Guru &amp; Tendik Hari Ini', 'Total Guru &amp; Tendik'] as $label) {
             $this->assertStringContainsString($label, $html);
         }
 
-        // Aksen brand dan sentuhan warna tetap dipertahankan.
-        $this->assertStringContainsString('text-brand-700', $html);
-        $this->assertStringContainsString('rainbow-bar', $html, 'Strip pelangi menjadi penanda aksen berwarna.');
+        // Aksen brand tetap dipakai untuk tautan dan status.
+        $this->assertStringContainsString('text-brand-600', $html);
+        $this->assertStringNotContainsString('rainbow-bar', $html, 'Strip pelangi lama sudah diganti aksen tipis.');
     }
 
-    /** Keputusan desain: kanvas putih bersih + aksen berwarna, menggantikan
-     *  tema maroon gelap lama. */
-    public function test_kanvas_putih_dan_header_tabel_gradien(): void
+    /** Keputusan desain: kanvas lembut + kepala tabel netral, bukan blok
+     *  gradien merah yang mendominasi setiap halaman. */
+    public function test_kanvas_lembut_dan_header_tabel_netral(): void
     {
         $css = file_get_contents(resource_path('css/app.css'));
 
-        $this->assertStringContainsString('--color-canvas: #ffffff', $css, 'Kanvas halaman harus putih bersih.');
-        $this->assertMatchesRegularExpression('/\.table thead \{[^}]*from-brand-600/', $css, 'Header tabel harus gradien brand.');
+        $this->assertStringContainsString('--color-canvas: #f6f7fb', $css, 'Kanvas halaman memakai abu sangat muda.');
+        $this->assertMatchesRegularExpression('/\.table thead \{[^}]*bg-slate-50/', $css, 'Header tabel harus netral.');
         $this->assertMatchesRegularExpression('/\.table tbody tr \{[^}]*bg-white/', $css, 'Baris tabel harus putih.');
-        $this->assertMatchesRegularExpression('/\.table th \{[^}]*text-white/', $css, 'Teks header kolom harus putih di atas gradien.');
+        $this->assertMatchesRegularExpression('/\.table th \{[^}]*text-slate-500/', $css, 'Teks header kolom harus abu gelap.');
         $this->assertStringNotContainsString('maroon', $css, 'Skema maroon gelap tidak boleh tersisa di stylesheet.');
-        $this->assertStringContainsString('.rainbow-bar', $css, 'Aksen berwarna tetap ada di stylesheet.');
+        $this->assertMatchesRegularExpression('/\.sidebar-link \{[^}]*text-slate-400/', $css, 'Sidebar harus memakai teks terang di atas navy.');
     }
 
     private function buatUser(string $role): User

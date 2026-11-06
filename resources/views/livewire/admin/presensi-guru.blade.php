@@ -139,4 +139,6 @@
             <div>{{ $presensi->links() }}</div>
         </div>
     @endif
+
+    <x-tap-belum-terdaftar :taps="$belumTerdaftar" />
 </div>

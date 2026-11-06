@@ -1,15 +1,19 @@
 @import "tailwindcss";
 
 /*
- * Palet merek ADMS.
+ * Design system aplikasi.
  *
- * Seluruh warna aksen aplikasi memakai skala "brand" ini. Mengganti warna
- * aplikasi cukup dilakukan di satu tempat, bukan dengan menyunting setiap
- * view. Skala dibuat manual (bukan alias ke red bawaan) supaya nuansanya
- * sedikit lebih hangat dan dalam, sehingga tombol primer tetap terbaca
- * profesional dan tidak mencolok seperti merah alarm.
+ * Satu sumber warna dan bentuk: view hanya memakai kelas komponen
+ * (.card, .btn, .table, .badge, ...), bukan warna mentah. Mengubah tema
+ * cukup di file ini.
+ *
+ * Arah visual: dashboard modern dengan sidebar navy gelap, kanvas abu
+ * sangat muda, kartu putih membulat, dan aksen merah sekolah yang dipakai
+ * hemat untuk aksi utama serta item menu aktif.
  */
 @theme {
+    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
     --color-brand-50: #fef4f4;
     --color-brand-100: #fee6e6;
     --color-brand-200: #fdd0d0;
@@ -22,22 +26,17 @@
     --color-brand-900: #7a1d1f;
     --color-brand-950: #450c0e;
 
-    /*_netral aplikasi_
-       Kanvas putih bersih: seluruh permukaan aplikasi (halaman, sidebar,
-       header, tabel) memakai putih sebagai dasar, warna hanya muncul sebagai
-       aksen. */
-    --color-canvas: #ffffff;
+    /* Permukaan aplikasi. Kanvas sedikit abu supaya kartu putih terbaca
+       sebagai lapisan di atasnya, bukan menyatu. */
+    --color-canvas: #f6f7fb;
     --color-ink: #0f172a;
 
-    /*_warna status_
-       Merah DICADANGKAN untuk brand. Warna "bahaya" karena itu memakai
-       merah gelap (#991b1b), bukan merah terang seperti brand (#cc2f2f).
-       Kalau keduanya merah terang, tombol "Hapus akun" dan tombol brand
-       tidak bisa dibedakan, dan badge "Ditolak" ikut tertukar dengan
-       badge brand. Jarak rona ini yang memisahkannya.
+    /* Sidebar navy: tiga tingkat untuk latar, hover, dan item aktif. */
+    --color-navy-950: #070d18;
+    --color-navy-900: #0b1220;
+    --color-navy-800: #111a2b;
+    --color-navy-700: #1a2438;
 
-       Skala 50/100 untuk latar badge dan 600/700/800 untuk teks serta
-       aksi, supaya kontras teks kecil tetap >= 4.5:1 di atas latar. */
     --color-sukses-50: #ecfdf5;
     --color-sukses-100: #d1fae5;
     --color-sukses-600: #059669;
@@ -56,17 +55,12 @@
     --color-bahaya-700: #7f1d1d;
     --color-bahaya-800: #681515;
 
-    /* ---------- Warna aksen sekunder ----------
-       Biru (info) dipakai untuk kartu, badge, dan gradien ikon supaya tidak
-       semua elemen merah. */
-
     --color-info-50: #eff6ff;
     --color-info-100: #dbeafe;
     --color-info-600: #2563eb;
     --color-info-700: #1d4ed8;
     --color-info-800: #1e40af;
 
-    /* Alias tanpa angka untuk pemakaian yang hanya butuh warna solid. */
     --color-sukses: var(--color-sukses-600);
     --color-peringatan: var(--color-peringatan-600);
     --color-bahaya: var(--color-bahaya-600);
@@ -79,12 +73,11 @@
     }
 
     body {
-        @apply font-sans text-slate-900 antialiased;
+        @apply bg-canvas font-sans text-slate-900 antialiased;
         font-feature-settings: "cv11", "ss01";
     }
 
-    /* Kolom angka (NIS, rekap, nilai, tanggal) memakai angka tabular supaya
-       digit sejajar ke kanan. Tanpa ini kolom 790 siswa selalu bergeser. */
+    /* Angka tabular supaya NIS, NIP, dan rekap tidak bergeser antar baris. */
     .num,
     table .num,
     .stat-value {
@@ -92,35 +85,24 @@
         font-feature-settings: "tnum";
     }
 
-    /* Fokus keyboard harus selalu terlihat, termasuk untuk elemen custom.
-       Elemen form punya gaya fokus sendiri (lihat .input) supaya tidak
-       mendapat dua cincin fokus sekaligus. */
     :focus-visible:not(input):not(select):not(textarea) {
-        @apply outline-none ring-2 ring-brand-600/60 ring-offset-2 ring-offset-white;
+        @apply outline-none ring-2 ring-brand-500/70 ring-offset-2 ring-offset-canvas;
     }
 
-    /* Elemen yang bergantung Alpine disembunyikan sampai Alpine siap,
-       supaya tidak berkedip saat halaman dimuat. */
     [x-cloak] {
         display: none !important;
     }
 }
 
 @layer components {
-    /* ---------- Permukaan ----------
-       Sudut dibatasi maksimal 8px (rounded-lg). Sudut yang lebih bulat
-       membuat tabel 790 baris terasa seperti kartu marketing, bukan alat
-       kerja. Bayangan tipis memisahkan kartu putih dari kanvas putih tanpa
-       membuat halaman terasa berat. */
+    /* ---------- Permukaan ---------- */
+
     .card {
-        @apply rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-200/70;
+        @apply rounded-xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/[0.03];
     }
 
-    /* Kepala kartu diberi wash warna brand tipis di sisi kiri sehingga kartu
-       putih punya arah baca, bukan kotak putih datar. */
     .card-header {
-        @apply flex flex-wrap items-center justify-between gap-3 border-b border-slate-200
-               bg-gradient-to-r from-brand-50/70 to-white px-5 py-4;
+        @apply flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4;
     }
 
     .card-body {
@@ -130,40 +112,35 @@
     /* ---------- Tipografi ---------- */
 
     .page-title {
-        @apply text-2xl font-semibold tracking-tight text-slate-900;
+        @apply text-[22px] font-semibold leading-tight tracking-tight text-slate-900;
     }
 
     .page-subtitle {
         @apply mt-1 text-sm text-slate-500;
     }
 
-    /* Judul seksi sengaja TIDAK memakai uppercase/tracking lebar: untuk
-       data internal, kapital besar menambah kebisingan tanpa menambah
-       hierarki. Uppercase hanya dipakai di header tabel. */
     .section-title {
-        @apply text-base font-semibold text-slate-800;
+        @apply text-[15px] font-semibold tracking-tight text-slate-900;
+    }
+
+    .eyebrow {
+        @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400;
     }
 
     /* ---------- Kartu statistik ---------- */
 
     .stat-card {
-        @apply flex items-center gap-4 rounded-lg border border-slate-200 bg-white px-5 py-4
-               shadow-sm shadow-slate-200/70 transition duration-150;
+        @apply flex items-center gap-4 rounded-xl border border-slate-200/80 bg-white px-5 py-4
+               shadow-sm shadow-slate-900/[0.03] transition duration-150;
     }
 
     .stat-card:hover {
-        @apply -translate-y-0.5 shadow-md shadow-slate-300/70;
+        @apply -translate-y-0.5 border-slate-300/80 shadow-md shadow-slate-900/[0.06];
     }
 
-    /* Ikon memakai chip berwarna pekat (gradien) supaya empat kartu statistik
-       terbaca sebagai empat warna berbeda di atas kanvas putih. Putih di atas
-       ujung gelap gradien minimal ~3:1, aman untuk ikon grafis.
-
-       Default biru; pemanggil memberi warna lewat kelas tone eksplisit
-       (lihat dashboard). */
     .stat-icon {
         @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white
-               bg-gradient-to-br from-sky-600 to-indigo-600;
+               bg-gradient-to-br from-sky-500 to-indigo-600;
     }
 
     .stat-value {
@@ -186,38 +163,26 @@
         @apply text-rose-600;
     }
 
-    /* ---------- Tombol ----------
-       Pakai sebagai "class btn btn-primary". Modifier hanya mengatur warna,
-       sehingga tidak perlu @apply dari class kustom lain. */
+    /* ---------- Tombol ---------- */
 
     .btn {
         @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-transparent
-               px-4 text-sm font-medium whitespace-nowrap transition duration-150
+               px-4 text-sm font-semibold whitespace-nowrap transition duration-150
                disabled:cursor-not-allowed disabled:opacity-60;
     }
 
-    /* Gradien brand memberi kedalaman pada tombol utama; bayangan berwarna
-       membuat tombol "terangkat" dari kanvas putih. */
-    .btn-primary {
-        @apply bg-gradient-to-r from-brand-600 to-brand-700 text-white
-               shadow-sm shadow-brand-600/30 hover:from-brand-700 hover:to-brand-800
-               hover:shadow-md hover:shadow-brand-600/40;
-    }
-
-    /* Alias lama: beberapa view memanggil btn-brand. */
+    .btn-primary,
     .btn-brand {
-        @apply bg-gradient-to-r from-brand-600 to-brand-700 text-white
-               shadow-sm shadow-brand-600/30 hover:from-brand-700 hover:to-brand-800
-               hover:shadow-md hover:shadow-brand-600/40;
+        @apply bg-brand-600 text-white shadow-sm shadow-brand-600/25
+               hover:bg-brand-700 hover:shadow-md hover:shadow-brand-600/25
+               active:bg-brand-800;
     }
 
     .btn-secondary {
-        @apply border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+        @apply border-slate-200 bg-white text-slate-700 shadow-sm shadow-slate-900/[0.03]
+               hover:border-slate-300 hover:bg-slate-50;
     }
 
-    /* Hijau solid WAJIB memakai -700, bukan -600: putih di atas #059669 hanya
-       3.77:1 dan gagal ambang 4.5:1 untuk teks tombol 14px. Di -700 jadi
-       5.48:1. Badge tetap boleh pakai -600 karena teksnya tidak putih. */
     .btn-success {
         @apply bg-sukses-700 text-white hover:bg-sukses-800;
     }
@@ -227,7 +192,7 @@
     }
 
     .btn-ghost {
-        @apply text-slate-600 hover:bg-slate-100;
+        @apply text-slate-600 hover:bg-slate-100 hover:text-slate-900;
     }
 
     .btn-sm {
@@ -237,18 +202,19 @@
     /* ---------- Form ---------- */
 
     .label {
-        @apply mb-1.5 block text-[13px] font-medium text-slate-600;
+        @apply mb-1.5 block text-[13px] font-medium text-slate-700;
     }
 
-    /*_input 40px_ + fokus: border brand-600 + ring brand-100 3px */
     .input {
         @apply block h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800
-               placeholder:text-slate-400 focus:border-brand-600 focus:ring-[3px] focus:ring-brand-100;
+               shadow-sm shadow-slate-900/[0.02] placeholder:text-slate-400
+               focus:border-brand-500 focus:ring-[3px] focus:ring-brand-100;
     }
 
     .select {
         @apply block h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800
-               focus:border-brand-600 focus:ring-[3px] focus:ring-brand-100;
+               shadow-sm shadow-slate-900/[0.02]
+               focus:border-brand-500 focus:ring-[3px] focus:ring-brand-100;
     }
 
     .input-error {
@@ -259,22 +225,17 @@
         @apply mt-1.5 text-xs font-medium text-bahaya-700;
     }
 
-    /* ---------- Label status ----------
-       Pakai sebagai "class badge badge-success". */
+    /* ---------- Label status ---------- */
 
     .badge {
-        @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap;
+        @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold
+               whitespace-nowrap;
     }
 
     .badge-neutral {
         @apply bg-slate-100 text-slate-600;
     }
 
-    /* Warna teks badge memakai versi lebih gelap dari token status supaya
-       kontras teks kecil tetap >= 4.5:1 di atas latar badge.
-
-       badge-danger diberi ring tipis yang memisahkan "Ditolak" dari badge
-       brand tanpa harus menambah ikon. */
     .badge-success {
         @apply bg-sukses-50 text-sukses-700;
     }
@@ -295,19 +256,12 @@
         @apply bg-brand-50 text-brand-700;
     }
 
-    /* ---------- Tabel ----------
-       Header 44px, baris 48px: cukup lega untuk dibaca 8 jam sehari
-       tanpa membuat tabel 790 baris terasa jarang.
+    /* ---------- Tabel ---------- */
 
-       Seluruh isi tabel kini di atas putih: baris putih bergaris slate tipis,
-       zebra halus, dan header gradien brand sebagai satu-satunya blok warna.
-       Teks sel memakai slate (lihat view) supaya tetap terbaca di atas putih. */
     .table-shell {
-        @apply overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm shadow-slate-200/70;
+        @apply overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/[0.03];
     }
 
-    /* Baris judul + pencarian mewarisi card-header (putih dengan wash brand
-       tipis), jadi tidak perlu lagi dibuat blok gelap tersendiri. */
     .table-scroll {
         @apply overflow-x-auto;
     }
@@ -316,59 +270,47 @@
         @apply w-full border-collapse text-left;
     }
 
+    /* Header tenang: abu muda dengan huruf kapital kecil. Warna pekat
+       dicadangkan untuk aksi, bukan untuk kepala tabel yang diulang di
+       setiap halaman. */
     .table thead {
-        /* Gradien brand -> rose: header jadi blok warna yang tegas tetapi
-           tetap satu keluarga dengan tombol utama. Kedua ujung lolos kontras
-           4.5:1 untuk teks putih 12px. */
-        @apply bg-gradient-to-r from-brand-600 to-rose-600;
+        @apply bg-slate-50;
     }
 
     .table th {
-        @apply h-11 whitespace-nowrap px-4 text-xs font-semibold uppercase tracking-wide text-white;
+        @apply h-11 whitespace-nowrap border-b border-slate-200/80 px-4 text-[11px] font-semibold
+               uppercase tracking-[0.06em] text-slate-500;
     }
 
     .table td {
         @apply h-12 px-4 text-sm text-slate-700;
     }
 
-    /* Baris zebra halus: membantu mata melacak baris di tabel lebar. */
-    .table tbody tr:nth-child(even) {
-        @apply bg-slate-50/70;
-    }
-
-    /* Baris "belum ada data" diberi latar lebih pekat supaya terpisah dari
-       baris data. */
-    .table tbody tr:only-child td[colspan] {
-        @apply bg-slate-100/70;
-    }
-
     .table tbody tr {
-        @apply border-t border-slate-200 bg-white transition-colors hover:bg-brand-50/60;
+        @apply border-t border-slate-100 bg-white transition-colors hover:bg-slate-50/80;
     }
 
-    /* Baris terseleksi dibuat lebih pekat dari baris biasa. */
+    .table tbody tr:only-child td[colspan] {
+        @apply bg-transparent;
+    }
+
     .table tbody tr.row-selected {
-        @apply bg-brand-100/70 hover:bg-brand-100;
+        @apply bg-brand-50 hover:bg-brand-50;
     }
 
-    /* Kepala kelompok pada rekap harian (per kelas): baris tipis berlatar
-       slate yang memisahkan blok satu kelas dari kelas berikutnya tanpa
-       menambah kolom "Kelas" berulang di setiap baris. Didefinisikan setelah
-       aturan zebra supaya latarnya tidak tertimpa warna baris genap. */
     .table tbody tr.group-row {
-        @apply bg-slate-100/80 hover:bg-slate-100;
+        @apply border-t-slate-200 bg-slate-50 hover:bg-slate-50;
     }
 
     .table tbody tr.group-row td {
         @apply h-9 py-0;
     }
 
-    /* ---------- Bilah aksi massal ----------
-       Muncul tepat di atas tabel hanya saat ada baris terpilih. Wash gradien
-       brand -> amber membedakannya dari header tabel di bawahnya. */
+    /* ---------- Bilah aksi massal ---------- */
+
     .bulk-bar {
-        @apply flex flex-wrap items-center gap-3 border-b border-brand-200
-               bg-gradient-to-r from-brand-50 to-amber-50 px-4 py-3 text-brand-800;
+        @apply flex flex-wrap items-center gap-3 border-b border-brand-100
+               bg-brand-50/80 px-4 py-3 text-brand-800;
     }
 
     /* ---------- Empty state ---------- */
@@ -385,11 +327,11 @@
         @apply mt-1 max-w-sm text-sm text-slate-500;
     }
 
-    /* ---------- Toast ----------
-       Pojok kanan bawah, garis kiri 4px warna status. */
+    /* ---------- Toast ---------- */
+
     .toast {
-        @apply pointer-events-auto flex w-full items-start gap-3 rounded-lg border border-slate-200
-               border-l-4 bg-white p-4 shadow-lg;
+        @apply pointer-events-auto flex w-full items-start gap-3 rounded-xl border border-slate-200
+               border-l-4 bg-white p-4 shadow-lg shadow-slate-900/10;
     }
 
     .toast-success { @apply border-l-sukses; }
@@ -397,46 +339,50 @@
     .toast-warning { @apply border-l-peringatan; }
     .toast-info    { @apply border-l-info; }
 
-    /* ---------- Sidebar ----------
-       Sidebar aplikasi berwarna putih dengan border kanan; item aktif
-       memakai brand-50 + teks brand-700 + bar merah 3px di sisi kiri. */
+    /* ---------- Sidebar gelap ----------
+       Item biasa abu terang, item aktif putih dengan bar merah di tepi
+       kiri. Semua state memakai latar translusen supaya menyatu dengan
+       navy, bukan blok putih di atas sidebar gelap. */
     .sidebar-link {
-        @apply relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium
-               text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900;
+        @apply relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium
+               text-slate-400 transition-colors hover:bg-white/5 hover:text-white;
     }
 
     .sidebar-link-active {
-        @apply bg-brand-50 text-brand-700;
+        @apply bg-white/10 text-white;
     }
 
     .sidebar-link-active:hover {
-        @apply bg-brand-100 text-brand-800;
+        @apply bg-white/15 text-white;
     }
 
     .sidebar-link-active::before {
         content: "";
-        /* Penanda aktif: bar brand yang menempel di tepi kiri sidebar. */
-        @apply absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand-600;
+        @apply absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-brand-500;
+    }
+
+    /* Chip ikon di sidebar: latar translusen, warna aksen lembut. */
+    .sidebar-chip {
+        @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.07] text-slate-300;
+    }
+
+    .sidebar-link-active .sidebar-chip {
+        @apply bg-brand-500/20 text-brand-300;
     }
 
     /* ---------- Utilitas ---------- */
 
-    /* Pelangi aksen: strip warna tipis di atas header & sidebar sebagai
-       sentuhan "berwarna" yang berlalu cepat di mata. */
     .rainbow-bar {
         background-image: linear-gradient(
             90deg,
             var(--color-brand-600) 0%,
-            #f59e0b 25%,
-            #10b981 50%,
-            #3b82f6 75%,
-            #8b5cf6 100%
+            var(--color-brand-400) 100%
         );
     }
 
     .sidebar-scroll {
         scrollbar-width: thin;
-        scrollbar-color: #cbd5e1 transparent;
+        scrollbar-color: #334155 transparent;
     }
 
     .sidebar-scroll::-webkit-scrollbar {
@@ -448,7 +394,7 @@
     }
 
     .sidebar-scroll::-webkit-scrollbar-thumb {
-        background-color: #cbd5e1;
+        background-color: #334155;
         border-radius: 9999px;
     }
 }

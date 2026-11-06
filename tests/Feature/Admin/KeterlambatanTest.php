@@ -250,6 +250,41 @@ class KeterlambatanTest extends TestCase
         ]);
     }
 
+    public function test_observer_memakai_jam_pribadi_guru(): void
+    {
+        // Guru siang tanpa kelas: jam pribadi 12:30-16:30, titik tengah 14:30.
+        // Tap 12:35 harus dianggap masuk, bukan pulang seperti aturan tengah hari.
+        $guru = $this->makeGuru('8001', '7001');
+        $guru->update(['jam_masuk' => '12:30', 'jam_pulang' => '16:30']);
+
+        Attendance::create([
+            'sn' => 'DEVICE001',
+            'table' => 'DEVICE001',
+            'stamp' => '2026-03-02 12:35:00',
+            'employee_id' => '7001',
+            'timestamp' => '2026-03-02 12:35:00',
+        ]);
+
+        Attendance::create([
+            'sn' => 'DEVICE001',
+            'table' => 'DEVICE001',
+            'stamp' => '2026-03-02 16:35:00',
+            'employee_id' => '7001',
+            'timestamp' => '2026-03-02 16:35:00',
+        ]);
+
+        $this->assertDatabaseHas('attendances', [
+            'employee_id' => '7001',
+            'timestamp' => '2026-03-02 12:35:00',
+            'jenis' => 'masuk',
+        ]);
+        $this->assertDatabaseHas('attendances', [
+            'employee_id' => '7001',
+            'timestamp' => '2026-03-02 16:35:00',
+            'jenis' => 'pulang',
+        ]);
+    }
+
     public function test_export_harian_memuat_status_terlambat(): void
     {
         $this->actingAsAdmin();

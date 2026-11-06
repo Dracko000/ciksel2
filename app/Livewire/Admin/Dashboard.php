@@ -2,10 +2,10 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\Device;
+use App\Models\Guru;
 use App\Models\Kelas;
-use App\Models\PengajuanIjin;
 use App\Models\Siswa;
+use App\Support\Absensi\AbsensiRekap;
 use App\Support\Absensi\JamKelas;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -19,11 +19,6 @@ class Dashboard extends Component
         // dibanding total siswa. Tap pulang tidak ikut dihitung.
         $todayStart = now()->startOfDay();
         $todayEnd = now()->endOfDay();
-
-        $stats = [
-            'izin_menunggu' => PengajuanIjin::where('status', 'pending')->count(),
-            'mesin_online' => Device::where('online', true)->count(),
-        ];
 
         $kelasList = Kelas::orderBy('nama_kelas')->get();
         $siswaByKelas = Siswa::select('kelas_id', DB::raw('count(*) as total'))->groupBy('kelas_id')->pluck('total', 'kelas_id')->toArray();
@@ -81,11 +76,33 @@ class Dashboard extends Component
 
         $latestLogs = DB::table('attendances')->orderBy('timestamp', 'DESC')->take(5)->get();
 
+        // Kehadiran guru & tendik hari ini, dihitung dengan AbsensiRekap yang
+        // sama seperti halaman Presensi Guru supaya statusnya konsisten
+        // (tepat waktu / terlambat mengikuti jam kelas wali atau jam guru).
+        // Penyebutnya seluruh guru, sejalan dengan donut siswa di atas.
+        $rekap = new AbsensiRekap;
+        $tapsHariIni = $rekap->tapHari(now()->toDateString());
+        $barisGuru = $rekap->baris(
+            $rekap->orang('', 'guru', $tapsHariIni->keys()->all()),
+            $tapsHariIni
+        );
+
+        $guruHadir = collect($barisGuru)->where('status', 'Hadir')->count();
+        $guruTerlambat = collect($barisGuru)->where('status', 'Terlambat')->count();
+        $totalGuru = Guru::count();
+
+        $kehadiranGuru = [
+            'hadir' => $guruHadir,
+            'terlambat' => $guruTerlambat,
+            'tidak' => max(0, $totalGuru - $guruHadir - $guruTerlambat),
+            'total' => $totalGuru,
+        ];
+
         return view('livewire.admin.dashboard', [
-            'stats' => $stats,
             'latestLogs' => $latestLogs,
             'kelasList' => $kelasList,
             'pieData' => $pieData,
+            'kehadiranGuru' => $kehadiranGuru,
         ])->layout('components.layouts.app');
     }
 }

@@ -55,6 +55,7 @@ class PresensiGuru extends Component
         $taps = $rekap->tapHari($this->dateFilter);
         $groups = $rekap->orang('', 'guru', $taps->keys()->all());
         $rows = $rekap->baris($groups, $taps);
+        $belumTerdaftar = $rekap->belumTerdaftar($taps);
 
         // Ringkasan donut selalu mencerminkan seluruh tanggal, bukan hasil
         // pencarian, supaya grafiknya tidak berubah saat mencari orang.
@@ -99,6 +100,7 @@ class PresensiGuru extends Component
             'alpha' => count($rows) - $hadir,
             'hadirTanggal' => $hadirTanggal,
             'alphaTanggal' => $alphaTanggal,
+            'belumTerdaftar' => $belumTerdaftar,
         ])->layout('components.layouts.app');
     }
 }

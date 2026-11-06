@@ -69,15 +69,9 @@
                 </div>
 
                 <div>
-                    <label for="guruSearch" class="label">Pembina</label>
-                    <input
-                        id="guruSearch"
-                        type="search"
-                        wire:model.live.debounce.300ms="guruSearch"
-                        placeholder="Cari guru..."
-                        class="input mb-2"
-                    >
+                    <label for="guruId" class="label">Pembina</label>
                     <select
+                        id="guruId"
                         wire:model="guruId"
                         class="input @error('guruId') input-error @enderror"
                     >

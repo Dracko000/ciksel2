@@ -7,9 +7,11 @@
 
         <div class="flex flex-wrap items-center gap-2">
             <span class="badge badge-neutral">{{ $users->total() }} akun</span>
-            @if ($isEdit)
-                <span class="badge badge-brand">Mode ubah data</span>
-            @endif
+
+            <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
+                <x-icon name="plus" class="h-4 w-4" />
+                Tambah Pengguna
+            </a>
         </div>
     </div>
 
@@ -27,166 +29,6 @@
             </div>
         </div>
     @endif
-
-    <div class="card">
-        <div class="card-header">
-            <h3 class="section-title">
-                {{ $isEdit ? 'Update Pengguna' : 'Tambah Pengguna' }}
-            </h3>
-
-            @if ($isEdit)
-                <span class="badge badge-brand">Sedang disunting</span>
-            @endif
-        </div>
-
-        <div class="card-body">
-            <form wire:submit.prevent="store">
-                <div class="grid gap-4 md:grid-cols-2">
-                    <div>
-                        <label for="name" class="label">Nama</label>
-                        <input
-                            id="name"
-                            wire:model="name"
-                            type="text"
-                            required
-                            class="input @error('name') input-error @enderror"
-                        >
-                        @error('name')
-                            <p class="help-error">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label for="email" class="label">Email</label>
-                        <input
-                            id="email"
-                            wire:model="email"
-                            type="email"
-                            required
-                            class="input @error('email') input-error @enderror"
-                        >
-                        @error('email')
-                            <p class="help-error">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label for="password" class="label">Password</label>
-                        <input
-                            id="password"
-                            wire:model="password"
-                            type="password"
-                            class="input @error('password') input-error @enderror"
-                        >
-                        <p class="mt-1.5 text-xs text-slate-500">Kosongkan bila tidak ingin mengubah.</p>
-                        @error('password')
-                            <p class="help-error">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label for="role" class="label">Peran (Role)</label>
-                        <select
-                            id="role"
-                            wire:model.live="role"
-                            class="input @error('role') input-error @enderror"
-                        >
-                            <option value="siswa">Siswa</option>
-                            <option value="guru">Guru / Tendik</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                        @error('role')
-                            <p class="help-error">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    @if ($role === 'siswa')
-                        <div>
-                            <label for="nis" class="label">NIS</label>
-                            <input
-                                id="nis"
-                                wire:model="nis"
-                                type="text"
-                                class="input @error('nis') input-error @enderror"
-                            >
-                            @error('nis')
-                                <p class="help-error">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label for="kelas_id" class="label">Kelas</label>
-                            <select id="kelas_id" wire:model="kelas_id" class="input">
-                                <option value="">Pilih Kelas</option>
-                                @foreach ($kelasList as $kelas)
-                                    <option wire:key="kelas-{{ $kelas->id }}" value="{{ $kelas->id }}">{{ $kelas->nama_kelas }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endif
-
-                    @if ($role === 'guru')
-                        <div>
-                            <label for="nip" class="label">NIP / NUPTK</label>
-                            <input
-                                id="nip"
-                                wire:model="nip"
-                                type="text"
-                                class="input @error('nip') input-error @enderror"
-                            >
-                            @error('nip')
-                                <p class="help-error">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <label class="flex items-center gap-2 self-end pb-2 text-sm text-slate-700">
-                            <input
-                                wire:model="is_tendik"
-                                type="checkbox"
-                                class="rounded border-slate-300 text-brand-600 focus:ring-brand-600/40"
-                            >
-                            Apakah Staff Tendik?
-                        </label>
-                    @endif
-
-                    @if ($role === 'siswa' || $role === 'guru')
-                        <div>
-                            <label for="wajah_id_zkteco" class="label">ZKTeco Employee ID (Wajah/Jari)</label>
-                            <input
-                                id="wajah_id_zkteco"
-                                wire:model="wajah_id_zkteco"
-                                type="text"
-                                class="input"
-                            >
-                            <p class="mt-1.5 text-xs text-slate-500">
-                                ID ini akan disinkronkan dengan log dari mesin absensi ZKTeco.
-                            </p>
-                        </div>
-
-                        <div>
-                            <label for="rfid_kartu" class="label">RFID Kartu</label>
-                            <input
-                                id="rfid_kartu"
-                                wire:model="rfid_kartu"
-                                type="text"
-                                class="input"
-                            >
-                        </div>
-                    @endif
-                </div>
-
-                <div class="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-4">
-                    <button type="button" wire:click="resetFields" class="btn btn-secondary">
-                        Batal
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <x-icon name="check" class="h-4 w-4" />
-                        {{ $isEdit ? 'Update' : 'Simpan' }}
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <div class="table-shell">
         <div class="card-header">
@@ -308,14 +150,13 @@
                             </td>
                             <td>
                                 <div class="flex justify-end gap-2">
-                                    <button
-                                        type="button"
-                                        wire:click="edit({{ $user->id }})"
+                                    <a
+                                        href="{{ route('admin.users.edit', $user) }}"
                                         class="btn btn-sm btn-secondary"
                                     >
                                         <x-icon name="edit" class="h-3.5 w-3.5" />
                                         Edit
-                                    </button>
+                                    </a>
                                     @if ((int) $user->id !== (int) auth()->id())
                                         <button
                                             type="button"
@@ -338,7 +179,7 @@
                                     <p class="empty-state-title">Tidak ada akun yang cocok</p>
                                     <p class="empty-state-text">
                                         Ubah kata kunci pencarian, filter role, atau filter kelas,
-                                        atau tambahkan akun baru lewat formulir di atas.
+                                        atau tambahkan akun baru lewat tombol Tambah Pengguna.
                                     </p>
                                     <button
                                         type="button"

@@ -1,7 +1,13 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\AuthServiceProvider;
+use App\Providers\EventServiceProvider;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
+use Yajra\DataTables\DataTablesServiceProvider;
+use Yajra\DataTables\Facades\DataTables;
 
 return [
 
@@ -163,12 +169,12 @@ return [
         /*
          * Application Service Providers...
          */
-        App\Providers\AppServiceProvider::class,
-        App\Providers\AuthServiceProvider::class,
+        AppServiceProvider::class,
+        AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
-        Yajra\DataTables\DataTablesServiceProvider::class,
+        EventServiceProvider::class,
+        RouteServiceProvider::class,
+        DataTablesServiceProvider::class,
     ])->toArray(),
 
     /*
@@ -184,7 +190,7 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
-        'DataTables' => Yajra\DataTables\Facades\DataTables::class,
+        'DataTables' => DataTables::class,
     ])->toArray(),
 
     /*
@@ -197,6 +203,6 @@ return [
     |
     */
 
-    'school_name' => env('SCHOOL_NAME', 'SDN Cikampek Selatan 2'),
+    'school_name' => env('SCHOOL_NAME', 'SDN CIKAMPEK SELATAN II'),
 
 ];

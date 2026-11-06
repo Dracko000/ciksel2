@@ -1,6 +1,6 @@
 {
-  "name": "ADMS - Absensi SDN Cikampek Selatan II",
-  "short_name": "ADMS Ciksel",
+  "name": "SDN CIKAMPEK SELATAN II",
+  "short_name": "Ciksel",
   "description": "Sistem Absensi Digital SDN Cikampek Selatan II",
   "start_url": "/",
   "display": "standalone",

@@ -1,5 +1,5 @@
 {{--
-    Paginasi Livewire dengan merek ADMS.
+    Paginasi Livewire dengan merek sekolah.
 
     View bawaan Livewire memakai abu-abu/biru + varian dark mode, sehingga
     angka halaman aktif tidak terbaca sebagai merek aplikasi. Di sini angka

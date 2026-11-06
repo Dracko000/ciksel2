@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Livewire\Admin\PresensiGuru;
+use App\Models\Device;
 use App\Models\Guru;
 use App\Models\Kelas;
 use App\Models\Siswa;
@@ -202,6 +203,50 @@ class PresensiGuruTest extends TestCase
             ->set('search', 'Guru Masuk')
             ->assertSee('Kehadiran Guru: 1 hadir dari 3 guru')
             ->assertDontSee('Guru Bolos A');
+    }
+
+    public function test_tap_belum_terdaftar_tampil_dengan_rfid_dari_mesin(): void
+    {
+        $this->actingAsAdmin();
+
+        $this->makeGuru('Guru Hadir', '8001', '7001');
+        $this->tap(7001, '2026-03-02 06:55:00');
+        $this->tap(9999, '2026-03-02 07:10:00');
+
+        Livewire::test(PresensiGuru::class)
+            ->set('dateFilter', '2026-03-02')
+            ->assertSee('RFID Belum Terdaftar')
+            ->assertSee('9999')
+            ->assertSee('07:10')
+            ->assertSee('1 RFID')
+            // Tap asing tidak punya identitas, jadi tidak ikut donut guru.
+            ->assertSee('Kehadiran Guru: 1 hadir dari 1 guru');
+    }
+
+    public function test_tap_belum_terdaftar_menampilkan_mesin_sumber(): void
+    {
+        $this->actingAsAdmin();
+
+        Device::create(['nama' => 'Mesin Absensi 1', 'no_sn' => 'DEVICE001']);
+        $this->tap(9999, '2026-03-02 07:10:00');
+
+        Livewire::test(PresensiGuru::class)
+            ->set('dateFilter', '2026-03-02')
+            ->assertSee('9999')
+            ->assertSee('Mesin Absensi 1');
+    }
+
+    public function test_tap_terdaftar_tidak_muncul_di_daftar_belum_terdaftar(): void
+    {
+        $this->actingAsAdmin();
+
+        $this->makeGuru('Guru Hadir', '8001', '7001');
+        $this->tap(7001, '2026-03-02 06:55:00');
+
+        Livewire::test(PresensiGuru::class)
+            ->set('dateFilter', '2026-03-02')
+            ->assertSee('0 RFID')
+            ->assertSee('Semua tap pada tanggal ini sudah cocok');
     }
 
     public function test_tombol_unduh_mengarah_ke_export_guru(): void

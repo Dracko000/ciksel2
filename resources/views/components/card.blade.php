@@ -16,13 +16,15 @@
     /* Default memakai info, bukan brand: sehingga stat card yang tidak
        menyebut tone tidak lagi merah semua. Merah dicadangkan untuk
        "kamu di sini" dan aksi utama. */
+    /* Chip ikon lembut: latar pastel tipis + ikon berwarna. Blok gradien
+       pekat terasa berat di dashboard yang penuh kartu. */
     $iconToneClass = match ($iconTone) {
-        'success' => 'bg-gradient-to-br from-emerald-600 to-teal-700 text-white',
-        'warning' => 'bg-gradient-to-br from-amber-600 to-orange-700 text-white',
-        'danger' => 'bg-gradient-to-br from-rose-600 to-red-700 text-white',
-        'neutral' => 'bg-gradient-to-br from-slate-500 to-slate-600 text-white',
-        'brand' => 'bg-gradient-to-br from-brand-500 to-rose-600 text-white',
-        default => 'bg-gradient-to-br from-sky-600 to-indigo-700 text-white',
+        'success' => 'bg-emerald-50 text-emerald-600 ring-1 ring-inset ring-emerald-100',
+        'warning' => 'bg-amber-50 text-amber-600 ring-1 ring-inset ring-amber-100',
+        'danger' => 'bg-bahaya-50 text-bahaya-700 ring-1 ring-inset ring-bahaya-100',
+        'neutral' => 'bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200',
+        'brand' => 'bg-brand-50 text-brand-600 ring-1 ring-inset ring-brand-100',
+        default => 'bg-sky-50 text-sky-600 ring-1 ring-inset ring-sky-100',
     };
 
     $badgeToneClass = match ($badgeTone) {
@@ -38,7 +40,7 @@
     @if ($icon || $badge)
         <div class="mb-4 flex items-start justify-between gap-3">
             @if (isset($icon))
-                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg {{ $iconToneClass }}">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl {{ $iconToneClass }}">
                     {!! $icon !!}
                 </span>
             @endif
@@ -50,7 +52,7 @@
     @endif
 
     @if ($title)
-        <p class="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">{{ $title }}</p>
+        <p class="eyebrow mb-1.5">{{ $title }}</p>
     @endif
 
     <div class="text-slate-900">

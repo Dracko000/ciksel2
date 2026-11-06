@@ -1,10 +1,15 @@
 <div class="space-y-6">
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-            <h2 class="page-title">Ringkasan Sekolah</h2>
-            <p class="page-subtitle">
-                Selamat datang kembali, {{ auth()->user()->name }}. Berikut ringkasan aktivitas hari ini.
-            </p>
+        <div class="flex items-center gap-4">
+            <img src="/logo-sekolah.png" alt="Logo {{ config('app.school_name') }}"
+                 class="h-14 w-14 shrink-0 rounded-xl object-contain">
+
+            <div>
+                <h2 class="page-title">Ringkasan Sekolah</h2>
+                <p class="page-subtitle">
+                    Selamat datang kembali, {{ auth()->user()->name }}. Berikut ringkasan aktivitas hari ini.
+                </p>
+            </div>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -24,37 +29,11 @@
         // Donut kehadiran: siswa unik yang tap masuk hari ini vs belum/tidak
         // hadir. Sumbernya PieData['all'] yang juga dipakai grafik per kelas.
         $kehadiran = $pieData['all'];
-
-        $cards = [
-            [
-                'label' => 'Izin Menunggu',
-                'value' => $stats['izin_menunggu'],
-                'icon' => 'document',
-                'delta' => $stats['izin_menunggu'] > 0 ? 'Perlu ditinjau' : 'Semua selesai',
-                'deltaUp' => $stats['izin_menunggu'] > 0,
-                'tone' => 'warning',
-            ],
-            [
-                'label' => 'Mesin Online',
-                'value' => $stats['mesin_online'],
-                'icon' => 'device',
-                'delta' => 'Mesin ZKTeco aktif',
-                'tone' => 'info',
-            ],
-        ];
-
-        $statIconTone = [
-            'neutral' => 'bg-gradient-to-br from-slate-500 to-slate-600',
-            'success' => 'bg-gradient-to-br from-emerald-600 to-teal-700',
-            'warning' => 'bg-gradient-to-br from-amber-600 to-orange-700',
-            'danger' => 'bg-gradient-to-br from-rose-600 to-red-700',
-            'info' => 'bg-gradient-to-br from-sky-600 to-indigo-700',
-        ];
     @endphp
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {{-- Kehadiran hari ini divisualkan sebagai donut: satu pandangan untuk
-             proporsi hadir vs tidak hadir, menggantikan dua kartu angka. --}}
+             proporsi hadir vs tidak hadir. --}}
         <x-donut-kehadiran
             :hadir="$kehadiran['hadir']"
             :terlambat="$kehadiran['terlambat']"
@@ -63,27 +42,18 @@
             title="Kehadiran Hari Ini"
             subtitle="Siswa hadir berdasarkan tap masuk hari ini."
             total-label="Total Siswa"
-            satuan="siswa"
-            class="sm:col-span-2 lg:col-span-2" />
+            satuan="siswa" />
 
-        @foreach ($cards as $card)
-            <div class="stat-card">
-                <span class="stat-icon {{ $statIconTone[$card['tone']] }}">
-                    <x-icon :name="$card['icon']" class="h-5 w-5" />
-                </span>
-
-                <div class="min-w-0">
-                    <p class="stat-value">{{ $card['value'] }}</p>
-                    <p class="stat-label">{{ $card['label'] }}</p>
-                    <p class="stat-delta {{ ($card['deltaUp'] ?? false) ? 'stat-delta-down' : 'text-slate-400' }}">
-                        @if ($card['deltaUp'] ?? false)
-                            <x-icon name="warning" class="h-3.5 w-3.5" />
-                        @endif
-                        {{ $card['delta'] }}
-                    </p>
-                </div>
-            </div>
-        @endforeach
+        {{-- Kehadiran guru & tendik, berdampingan dengan donut siswa. --}}
+        <x-donut-kehadiran
+            :hadir="$kehadiranGuru['hadir']"
+            :terlambat="$kehadiranGuru['terlambat']"
+            :tidak="$kehadiranGuru['tidak']"
+            :total="$kehadiranGuru['total']"
+            title="Kehadiran Guru & Tendik Hari Ini"
+            subtitle="Guru & tendik yang tap masuk hari ini."
+            total-label="Total Guru & Tendik"
+            satuan="guru" />
     </div>
 
     

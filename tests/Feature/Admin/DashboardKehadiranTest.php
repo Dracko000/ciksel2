@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\Guru;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\User;
@@ -46,6 +47,25 @@ class DashboardKehadiranTest extends TestCase
             'pin' => $nis,
             'nama' => 'Siswa '.$nis,
             'kelas_id' => $kelasId,
+            'wajah_id_zkteco' => $zktecoId,
+        ]);
+    }
+
+    private function makeGuru(string $nama, string $nip, ?string $zktecoId): Guru
+    {
+        $user = User::create([
+            'name' => $nama,
+            'email' => $nip.'@dashboard.test',
+            'username' => $nip,
+            'password' => bcrypt('secret'),
+            'role' => 'guru',
+        ]);
+
+        return Guru::create([
+            'user_id' => $user->id,
+            'nip' => $nip,
+            'pin' => $nip,
+            'nama' => $nama,
             'wajah_id_zkteco' => $zktecoId,
         ]);
     }
@@ -100,5 +120,37 @@ class DashboardKehadiranTest extends TestCase
             ->assertOk()
             ->assertSee('Kehadiran Hari Ini: 0 hadir dari 1 siswa')
             ->assertSee('0%');
+    }
+
+    public function test_donut_kehadiran_guru_menampilkan_hadir_dari_total(): void
+    {
+        $this->actingAsAdmin();
+
+        $this->makeGuru('Guru Hadir', '8001', '7001');
+        $this->makeGuru('Guru Bolos', '8002', '7002');
+
+        $this->tap('7001', 'masuk');
+
+        $this->get('/admin/dashboard')
+            ->assertOk()
+            ->assertSee('Kehadiran Guru & Tendik Hari Ini')
+            ->assertSee('Kehadiran Guru & Tendik Hari Ini: 1 hadir dari 2 guru')
+            ->assertSee('Total Guru & Tendik');
+    }
+
+    public function test_donut_guru_tidak_terpengaruh_tap_siswa(): void
+    {
+        $this->actingAsAdmin();
+
+        // Hanya siswa yang tap: donut guru harus tetap 0 dari 1 guru.
+        $kelas = Kelas::create(['nama_kelas' => '4 B']);
+        $this->makeSiswa('1001', '9001', $kelas->id);
+        $this->makeGuru('Guru Bolos', '8001', '7001');
+
+        $this->tap('9001', 'masuk');
+
+        $this->get('/admin/dashboard')
+            ->assertOk()
+            ->assertSee('Kehadiran Guru & Tendik Hari Ini: 0 hadir dari 1 guru');
     }
 }
