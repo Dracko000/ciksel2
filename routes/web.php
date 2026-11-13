@@ -58,6 +58,9 @@ Route::middleware(['iclock'])->group(function () {
     // request dari device
     Route::post('/iclock/cdata', [iclockController::class, 'receiveRecords']);
     Route::get('/iclock/getrequest', [iclockController::class, 'getrequest']);
+    // laporan balik setelah perintah dijalankan mesin
+    Route::post('/iclock/devicecmd', [iclockController::class, 'devicecmd']);
+    Route::get('/iclock/devicecmd', [iclockController::class, 'devicecmd']);
 });
 
 Route::get('/iclock/test', [iclockController::class, 'test'])->middleware('iclock');
