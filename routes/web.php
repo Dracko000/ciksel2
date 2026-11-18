@@ -23,6 +23,7 @@ use App\Livewire\Admin\InformasiSekolahManagement;
 use App\Livewire\Admin\KelasManagement;
 use App\Livewire\Admin\KonfirmasiIjin;
 use App\Livewire\Admin\LaporanBulanan;
+use App\Livewire\Admin\PerintahMesinPage;
 use App\Livewire\Admin\PresensiGuru;
 use App\Livewire\Admin\PresensiMurid;
 use App\Livewire\Admin\RfidBelumTerdaftar;
@@ -96,6 +97,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/informasi', InformasiSekolahManagement::class)->name('admin.info');
         Route::get('/admin/konfirmasi', KonfirmasiIjin::class)->name('admin.konfirmasi');
         Route::get('/admin/devices', DeviceManagement::class)->name('admin.devices');
+        Route::get('/admin/perintah-mesin', PerintahMesinPage::class)->name('admin.perintah-mesin');
         Route::get('/admin/laporan', LaporanBulanan::class)->name('admin.laporan');
     });
 

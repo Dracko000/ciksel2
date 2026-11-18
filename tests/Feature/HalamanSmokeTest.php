@@ -37,6 +37,7 @@ class HalamanSmokeTest extends TestCase
             '/admin/users/create',
             '/admin/rfid-belum-terdaftar',
             '/admin/devices',
+            '/admin/perintah-mesin',
             '/admin/absensi',
             '/admin/presensi-guru',
             '/admin/presensi-murid',

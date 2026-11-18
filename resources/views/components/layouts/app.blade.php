@@ -43,7 +43,13 @@
                 ],
             ],
             ['route' => 'admin.konfirmasi', 'label' => 'Konfirmasi Izin', 'icon' => 'check', 'badge' => true],
-            ['route' => 'admin.devices', 'label' => 'Mesin Absensi', 'icon' => 'device'],
+            [
+                'label' => 'Mesin Absensi', 'icon' => 'device',
+                'children' => [
+                    ['route' => 'admin.devices', 'label' => 'Monitoring Mesin'],
+                    ['route' => 'admin.perintah-mesin', 'label' => 'Perintah Mesin'],
+                ],
+            ],
             ['route' => 'admin.laporan', 'label' => 'Laporan Presensi', 'icon' => 'report'],
         ],
         'guru' => [

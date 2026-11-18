@@ -2,9 +2,11 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Livewire\Admin\DeviceManagement;
+use App\Livewire\Admin\PerintahMesinPage;
+use App\Models\Attendance;
 use App\Models\Device;
 use App\Models\DeviceCommand;
+use App\Models\Siswa;
 use App\Models\User;
 use App\Support\Absensi\PerintahMesin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -121,16 +123,16 @@ class PerintahMesinTest extends TestCase
         $this->actingAsAdmin();
         $device = $this->makeDevice();
 
-        Livewire::test(DeviceManagement::class)
-            ->call('bukaPerintah', $device->id)
-            ->assertSet('perintahDeviceId', $device->id)
-            ->set('perintahJenis', 'hapus_user')
-            ->set('perintahPin', '2')
+        Livewire::test(PerintahMesinPage::class)
+            ->call('pilihDevice', $device->id)
+            ->assertSet('deviceId', $device->id)
+            ->set('jenis', 'hapus_user')
+            ->set('pin', '2')
             ->set('konfirmasi', $device->no_sn)
-            ->call('kirimPerintah')
+            ->call('kirim')
             ->assertHasNoErrors()
             ->assertSet('konfirmasi', '')
-            ->assertSet('perintahPin', '');
+            ->assertSet('pin', '');
 
         $this->assertDatabaseHas('device_commands', [
             'no_sn' => $device->no_sn,
@@ -144,11 +146,11 @@ class PerintahMesinTest extends TestCase
         $this->actingAsAdmin();
         $device = $this->makeDevice();
 
-        Livewire::test(DeviceManagement::class)
-            ->call('bukaPerintah', $device->id)
-            ->set('perintahJenis', 'hapus_log')
+        Livewire::test(PerintahMesinPage::class)
+            ->call('pilihDevice', $device->id)
+            ->set('jenis', 'hapus_log')
             ->set('konfirmasi', 'SN-SALAH')
-            ->call('kirimPerintah')
+            ->call('kirim')
             ->assertHasErrors(['konfirmasi']);
 
         $this->assertSame(0, DeviceCommand::count());
@@ -159,13 +161,13 @@ class PerintahMesinTest extends TestCase
         $this->actingAsAdmin();
         $device = $this->makeDevice();
 
-        Livewire::test(DeviceManagement::class)
-            ->call('bukaPerintah', $device->id)
-            ->set('perintahJenis', 'hapus_user')
-            ->set('perintahPin', '2 PIN=3')
+        Livewire::test(PerintahMesinPage::class)
+            ->call('pilihDevice', $device->id)
+            ->set('jenis', 'hapus_user')
+            ->set('pin', '2 PIN=3')
             ->set('konfirmasi', $device->no_sn)
-            ->call('kirimPerintah')
-            ->assertHasErrors(['perintah']);
+            ->call('kirim')
+            ->assertHasErrors(['jenis']);
 
         $this->assertSame(0, DeviceCommand::count());
     }
@@ -175,13 +177,13 @@ class PerintahMesinTest extends TestCase
         $this->actingAsAdmin();
         $device = $this->makeDevice();
 
-        Livewire::test(DeviceManagement::class)
-            ->call('bukaPerintah', $device->id)
-            ->set('perintahJenis', 'hapus_user')
-            ->set('perintahPin', '')
+        Livewire::test(PerintahMesinPage::class)
+            ->call('pilihDevice', $device->id)
+            ->set('jenis', 'hapus_user')
+            ->set('pin', '')
             ->set('konfirmasi', $device->no_sn)
-            ->call('kirimPerintah')
-            ->assertHasErrors(['perintah']);
+            ->call('kirim')
+            ->assertHasErrors(['jenis']);
 
         $this->assertSame(0, DeviceCommand::count());
     }
@@ -212,5 +214,103 @@ class PerintahMesinTest extends TestCase
         $this->actingAs($guru)
             ->get('/admin/devices')
             ->assertForbidden();
+    }
+
+    public function test_halaman_perintah_mesin_menampilkan_mesin_dan_riwayat(): void
+    {
+        $this->actingAsAdmin();
+        $device = $this->makeDevice();
+        PerintahMesin::hapusUser($device, '2');
+
+        $this->get(route('admin.perintah-mesin'))
+            ->assertOk()
+            ->assertSee('Perintah Mesin')
+            ->assertSee($device->no_sn)
+            ->assertSee('DATA DELETE USERINFO PIN=2');
+    }
+
+    public function test_query_device_memilih_mesin_yang_ditautkan(): void
+    {
+        $this->actingAsAdmin();
+        $this->makeDevice('SN-A', 'Mesin A');
+        $kedua = $this->makeDevice('SN-B', 'Mesin B');
+
+        Livewire::withQueryParams(['device' => $kedua->id])
+            ->test(PerintahMesinPage::class)
+            ->assertSet('deviceId', $kedua->id);
+    }
+
+    public function test_daftar_pengguna_hanya_dari_tap_mesin_terpilih(): void
+    {
+        $this->actingAsAdmin();
+        $mesinA = $this->makeDevice('SN-A', 'Mesin A');
+        $this->makeDevice('SN-B', 'Mesin B');
+
+        $user = User::create([
+            'name' => 'Siswa Tap A',
+            'email' => 'tap.a@sekolah.test',
+            'username' => '2210900777',
+            'password' => bcrypt('secret123'),
+            'role' => 'siswa',
+        ]);
+
+        Siswa::create([
+            'user_id' => $user->id,
+            'nis' => '2210900777',
+            'pin' => '2210900777',
+            'nama' => 'Siswa Tap A',
+            'wajah_id_zkteco' => '777',
+        ]);
+
+        // Tap di mesin A.
+        Attendance::create([
+            'sn' => $mesinA->no_sn,
+            'table' => 'ATTLOG',
+            'stamp' => '1',
+            'employee_id' => '777',
+            'timestamp' => '2026-11-10 07:00:00',
+        ]);
+
+        // Tap di mesin B.
+        Attendance::create([
+            'sn' => 'SN-B',
+            'table' => 'ATTLOG',
+            'stamp' => '1',
+            'employee_id' => '888',
+            'timestamp' => '2026-11-10 07:00:00',
+        ]);
+
+        Livewire::test(PerintahMesinPage::class)
+            ->call('pilihDevice', $mesinA->id)
+            ->assertSee('Siswa Tap A')
+            ->assertSee('777')
+            ->assertDontSee('888');
+    }
+
+    public function test_pilih_pengguna_mengisi_pin(): void
+    {
+        $this->actingAsAdmin();
+        $device = $this->makeDevice();
+
+        Livewire::test(PerintahMesinPage::class)
+            ->call('pilihDevice', $device->id)
+            ->call('pilihPengguna', '242501007')
+            ->assertSet('pin', '242501007');
+    }
+
+    public function test_filter_status_riwayat(): void
+    {
+        $this->actingAsAdmin();
+        $device = $this->makeDevice();
+
+        $selesai = PerintahMesin::hapusUser($device, '1');
+        $selesai->update(['status' => 'done', 'return_code' => '0']);
+        PerintahMesin::hapusUser($device, '2');
+
+        Livewire::test(PerintahMesinPage::class)
+            ->call('pilihDevice', $device->id)
+            ->set('statusFilter', 'done')
+            ->assertSee('DATA DELETE USERINFO PIN=1')
+            ->assertDontSee('DATA DELETE USERINFO PIN=2');
     }
 }
